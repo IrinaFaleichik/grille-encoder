@@ -1,6 +1,6 @@
 package infrastructure.config
 
-// here make a connection to the DB according to ZIO config library
+// TODO here make a connection to the DB according to ZIO config library
 import zio.IO
 
 import zio.config._

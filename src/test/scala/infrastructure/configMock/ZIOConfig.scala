@@ -1,6 +1,8 @@
 package infrastructure.configMock
 
-// mocking db connection with prolly getquill lib
+// TODO mocking db connection with prolly getquill lib
+// example: https://scastie.scala-lang.org/QwOewNEiR3mFlKIM7v900A
+
 class ZIOConfig {
 
 }
