@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
   "dev.zio" %% "zio-streams" % "2.1.21",
   // or ZIO Modules
     "io.getquill" %% "quill-jdbc-zio" % "4.7.3",
-  "io.getquill" %% "quill-jdbc" % "4.8.6"
+  "io.getquill" %% "quill-jdbc" % "4.7.3"
 )
 // ZIO
 libraryDependencies ++= Seq(

@@ -1,16 +1,16 @@
 package infrastructure.db
 
 import com.typesafe.config.ConfigFactory
-import io.getquill.*
+import io.getquill._
 import io.getquill.jdbczio.Quill
-import io.getquill.util.LoadConfig.getClass
 import zio.{ZIO, ZIOAppDefault, ZLayer}
 
 import java.sql.SQLException
 
-case class Student(name: String)
+//TODO need some experiments with insertion to the db
+case class Students(id: Int, name: String)
 
-class MyContext extends SqlMirrorContext(MirrorSqlDialect, Literal)
+//class MyContext extends SqlMirrorContext(MirrorSqlDialect, Literal)
 //
 //trait MySchema {
 //
@@ -23,37 +23,34 @@ class MyContext extends SqlMirrorContext(MirrorSqlDialect, Literal)
 //}
 //val ctx = new SqlMirrorContext(PostgresDialect, SnakeCase)
 
-//object DBZioPlayground {
-//    class DataService(quill: Quill.Postgres[SnakeCase]) {
 class DataService(ctx: Quill.Sqlite[SnakeCase]) {
 
   import ctx._
 
-  private def getStudentsQuery: Quoted[Query[Student]] = {
-
-    val students: Quoted[Query[Student]] = quote {
-      query[Student]
-    }
-    students
+  def getStudents: ZIO[Any, SQLException, List[Students]] = {
+    ctx.run(query[Students])
   }
+  
+//  ctx.run(insertValues(List(Students(2, "Alice"))))
 
-  private def getStudents: ZIO[Any, SQLException, List[Student]] = ctx.run(getStudentsQuery)
+//  def insertStudents: ZIO[Any, SQLException, List[Students]] = {
+//    ctx.run(query[Students].add())
+//  }
 }
 
 object DataService {
-  def getStudents =
+  def getStudents: ZIO[DataService, SQLException, List[Students]] = {
     ZIO.serviceWithZIO[DataService](_.getStudents)
+  }
 
+//  def insertStudents = {//: ZIO[DataService, SQLException, List[Students]] = {
+//    ZIO.serviceWithZIO[DataService](_.insertStudents(stud))
+//  }
+//}
   val live = ZLayer.fromFunction(new DataService(_))
 }
 
-
-/**
- * Simple example of Quill using the jdbc-zio context
- */
 object Main extends ZIOAppDefault {
-
-  //  import DBZioPlayground._
 
   override def run = {
     DataService.getStudents
@@ -63,7 +60,6 @@ object Main extends ZIOAppDefault {
         Quill.DataSource.fromPrefix("myDatabaseConfig")
       )
       .debug("Results")
-//      ("Results")
       .exitCode
   }
 }

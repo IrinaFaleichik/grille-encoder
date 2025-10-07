@@ -61,15 +61,17 @@ object DBPlayground extends App {
 
     val statement: Either[SQLException, Statement] = connection.map(e => e.createStatement())
 
-    val createTable = "CREATE TABLE IF NOT EXISTS students(id INTEGER PRIMARY KEY, name TEXT)"
-    statement.map(_.executeUpdate(createTable))
+//    val createTable = "CREATE TABLE IF NOT EXISTS students(id INTEGER PRIMARY KEY, name TEXT)"
+//    statement.map(_.executeUpdate(createTable))
 
-    val addJohn = "INSERT INTO students(name) VALUES(‘John’)"
-    val addAlice = "INSERT INTO students(name) VALUES(‘Alice’)"
+    val addJohn = "INSERT INTO students(name) VALUES('John')"
+    val addAlice = "INSERT INTO students(name) VALUES('Alice')"
 
     statement.map(_.executeUpdate(addJohn))
     statement.map(_.executeUpdate(addAlice))
+    val resultSet = statement.map(_.executeQuery("SELECT * FROM students").getString("name"))
 
+    resultSet.map(println(_))
     println("Data Inserted")
 
     statement.map(_.close())
