@@ -1,7 +1,9 @@
 package infrastructure.http
 
-import zio._
-import zio.http._
+import zio.*
+import zio.http.*
+import infrastructure.db.*
+import zio.json.EncoderOps
 
 object ExampleServer extends ZIOAppDefault {
 
@@ -26,6 +28,15 @@ object ExampleServer extends ZIOAppDefault {
       req.body.asString.map(Response.text(_))
     }
 
+  val studentsRoutes =
+    Routes(
+      Method.GET / "students" -> handler {
+        infrastructure.db.Api.getStudents.map { students =>
+          Response.text(students.toJson)
+        }
+      }
+    )
+
   // The Routes that don't require any service from the ZIO environment,
   // so the first type parameter is Any.
   // All the errors are handled by turning them into a Response.
@@ -33,8 +44,11 @@ object ExampleServer extends ZIOAppDefault {
     // List of all the routes
     Routes(greetRoute, echoRoute)
       // Handle all unhandled errors
+      .++(studentsRoutes)
       .handleError(e => Response.internalServerError(e.getMessage))
 
   // Serving the routes using the default server layer on port 8080
-  def run = Server.serve(routes).provide(Server.defaultWithPort(8083))
+  def run = for {
+    _ <- Server.serve(routes).provide(Server.defaultWithPort(8083))
+  } yield ()
 }

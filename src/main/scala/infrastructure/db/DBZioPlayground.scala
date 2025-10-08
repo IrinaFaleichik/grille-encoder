@@ -2,13 +2,16 @@ package infrastructure.db
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill
-import zio.{ExitCode, URIO, ZIO, ZIOAppDefault, ZLayer}
+import zio.json.{DeriveJsonEncoder, JsonEncoder}
+import zio.{ExitCode, Task, URIO, ZIO, ZIOAppDefault, ZLayer}
 
 import java.sql.SQLException
 
 // TODO read this: https://zio.dev/zio-quill/writing-queries/
 case class Students(id: Int, name: String)
-
+object Students {
+  implicit val encoder: JsonEncoder[Students] = DeriveJsonEncoder.gen[Students]
+}
 //class MyContext extends SqlMirrorContext(MirrorSqlDialect, Literal)
 //
 //trait MySchema {
@@ -53,26 +56,53 @@ object DataService {
 }
 
 // TODO: how to produce 2 operations in the same app?
-object Main extends ZIOAppDefault {
+object Api { //extends ZIOAppDefault {
+//  ZIO.serviceWithZIO[DataService]
+  lazy val connection = DataService.live
+//      .provide(
+//        connection,
+//        Quill.Sqlite.fromNamingStrategy(SnakeCase),
+//        Quill.DataSource.fromPrefix("myDatabaseConfig")
+//      )
 
-  override def run: URIO[Any, ExitCode] = {
-    val connection = DataService.live
+//  override def run: URIO[Any, ExitCode] = {
+    def getStudents: Task[List[Students]] =
     DataService.getStudents
       .provide(
         connection,
         Quill.Sqlite.fromNamingStrategy(SnakeCase),
         Quill.DataSource.fromPrefix("myDatabaseConfig")
       )
-      .debug("Results")
-      .exitCode
-
-    // an insert operation
-//    DataService.insertStudents(List(Students(3, "Vyacheslav")))
+//      .debug("Results")
+//      .exitCode
+//  }
+//  def getStudents(): ZIO[DataService, SQLException, List[Students]] = {
+//    DataService.getStudents
 //      .provide(
 //        connection,
 //        Quill.Sqlite.fromNamingStrategy(SnakeCase),
 //        Quill.DataSource.fromPrefix("myDatabaseConfig")
 //      )
 //      .debug("Results")
+//      .exitCode
+//  }
+  def insertInDb(students: Students) = {
+        // an insert operation
+        DataService.insertStudents(List(students))
+          .provide(
+            connection,
+            Quill.Sqlite.fromNamingStrategy(SnakeCase),
+            Quill.DataSource.fromPrefix("myDatabaseConfig")
+          )
+//          .debug("Results")
+          .exitCode
   }
+}
+
+object Test extends ZIOAppDefault {
+  import Api._
+    override def run: URIO[Any, ExitCode] = {
+      getStudents.debug("Results").exitCode
+    }
+  
 }
