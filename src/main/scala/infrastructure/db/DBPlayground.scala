@@ -15,14 +15,13 @@ object DBPlayground extends App {
 //  val dbUrl = config.getString("myDatabaseConfig")
   val hikariConfig1 = config.getConfig("myDatabaseConfig")
 
-  def configProperties = {
+  private def configProperties = {
     import scala.jdk.CollectionConverters._
     val p = new Properties
-    for (entry <- hikariConfig1.entrySet.asScala) {
-      p.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
-      println(s"${entry.getKey}, ${entry.getValue.unwrapped.toString}")
-    }
-
+//    for (entry <- hikariConfig1.entrySet.asScala) {
+//      p.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
+////      println(s"${entry.getKey}, ${entry.getValue.unwrapped.toString}")
+//    }
     p
   }
 

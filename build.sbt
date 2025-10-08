@@ -12,11 +12,16 @@ lazy val root = (project in file("."))
 libraryDependencies ++= Seq(
   "dev.zio" %% "zio" % "2.1.21",
   "dev.zio" %% "zio-streams" % "2.1.21",
-  // or ZIO Modules
+  // DB ZIO Modules
     "io.getquill" %% "quill-jdbc-zio" % "4.7.3",
   "io.getquill" %% "quill-jdbc" % "4.7.3"
 )
-// ZIO
+libraryDependencies ++= Seq(
+  "dev.zio" %% "zio-http" % "3.3.3"
+  // DB ZIO Modules
+)
+
+// ZIO config
 libraryDependencies ++= Seq(
   "dev.zio" %% "zio-config"          % "4.0.5",
   "dev.zio" %% "zio-config-magnolia" % "4.0.5",
@@ -31,6 +36,8 @@ libraryDependencies ++= Seq(
   // Syncronous JDBC Modules
   //  "io.getquill" %% "quill-jdbc" % "4.7.3",
 )
+// Force zio-json to a single version
+dependencyOverrides += "dev.zio" %% "zio-json" % "0.6.2"
 
 
 //libraryDependencies += "dev.zio" %% "zio-jdbc" % "0.1.2" // Replace with the latest version
