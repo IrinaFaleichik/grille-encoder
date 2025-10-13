@@ -1,0 +1,62 @@
+@startuml
+'arrows meaning:
+"1"  -right-> "2" : "one to one"
+"2"  -right-{ "3" : "one to many"
+@enduml
+
+@startuml
+'conceptional model
+skinparam class {
+  BackgroundColor White
+  BorderColor Black
+}
+class user
+class cardboard
+class square
+
+user  -right-{ cardboard
+cardboard  -right-{ square
+
+@enduml
+
+@startuml
+'logical data mode
+
+' --- Entities ---
+entity "user" as user {
+' unique generated key
+  userId: String
+  --
+  email
+}
+entity "cardboard" as cardboard {
+' unique generated key
+  cardboardId: Int? Char?
+  --
+' foreign key from user
+' delete if user was deleted from db ??
+  userId: String
+}
+entity "square" as square {
+  squareId: Int? Char?
+  --
+' foreign key from cardboard
+' delete if cardboard was deleted from db
+  cardboardId
+  startX: Int
+  startY: Int
+  endX: Int
+  endY: Int
+'  or create object Point with x and y params
+}
+
+' --- relationships ---
+user -down-{ cardboard : \
+ "user can create/delete/edit \n\
+cardboard"
+
+cardboard -down-{ square : \
+"user can manipulate squares \n\
+of opened cardboard"
+
+@enduml
