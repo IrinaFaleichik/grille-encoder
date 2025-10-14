@@ -24,30 +24,33 @@ cardboard  -right-{ square
 
 ' --- Entities ---
 entity "user" as user {
-' unique generated key
-  userId: String
+' unique generated primary key
+  userId: Char
   --
-  email
+  name: Char
 }
 entity "cardboard" as cardboard {
-' unique generated key
-  cardboardId: Int? Char?
+' unique generated primary key
+  id: Char
   --
+  name: Char
 ' foreign key from user
-' delete if user was deleted from db ??
+' delete if user was deleted from db
   userId: String
 }
 entity "square" as square {
-  squareId: Int? Char?
+' composite primary key:
+  cardboardId + squareId
   --
-' foreign key from cardboard
-' delete if cardboard was deleted from db
+  ' square num inside 1 cardboard is limited by screen size
+  id: Int
+  ' foreign key from cardboard
+  ' delete if cardboard was deleted from db
   cardboardId
   startX: Int
   startY: Int
   endX: Int
   endY: Int
-'  or create object Point with x and y params
 }
 
 ' --- relationships ---
