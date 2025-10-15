@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS grid (
+    id CHAR UNIQUE NOT NULL PRIMARY KEY,
+    name CHAR NOT NULL,
+    user_id CHAR NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user(id) NOT NULL
+)
