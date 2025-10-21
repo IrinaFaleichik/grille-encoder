@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS poke (
                                     x_end INT NOT NULL,
                                     y_end INT NOT NULL,
                                     grid_id INT NOT NULL,
-                                    FOREIGN KEY (grid_id) REFERENCES grid(id)
+                                    FOREIGN KEY (grid_id) REFERENCES grid(id) ON DELETE CASCADE
     );
