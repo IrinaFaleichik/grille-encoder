@@ -8,7 +8,7 @@ import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 
 import java.util.Properties
 
-object DBPlayground extends App {
+object DBPlayground {
 
   val config = ConfigFactory.load()
   val dbUrl = config.getString("database.source.url")
@@ -55,7 +55,7 @@ object DBPlayground extends App {
     }
   }
 
-  private def main(): Unit = {
+  @main def main(): Unit = {
     val connection: Either[SQLException, Connection] = newConnection()
 
     val statement: Either[SQLException, Statement] = connection.map(e => e.createStatement())
@@ -77,5 +77,4 @@ object DBPlayground extends App {
     closeConnection(connection)
   }
 
-  main()
 }
