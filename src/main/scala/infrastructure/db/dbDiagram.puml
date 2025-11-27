@@ -1,25 +1,4 @@
 @startuml
-'arrows meaning:
-"1"  -right-> "2" : "one to one"
-"2"  -right-{ "3" : "one to many"
-@enduml
-
-@startuml
-'conceptional model
-skinparam class {
-  BackgroundColor White
-  BorderColor Black
-}
-class user
-class cardboard
-class square
-
-user  -right-{ cardboard
-cardboard  -right-{ square
-
-@enduml
-
-@startuml
 'logical data mode
 
 ' --- Entities ---
