@@ -4,8 +4,8 @@ ThisBuild / scalaVersion := "3.3.6"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "grille-encoder",
-    idePackagePrefix := Some("irka.grille-encoder")
+    name := "grilleEncoder",
+    idePackagePrefix := Some("irka.grilleEncoder")
   )
 
 // ZIO

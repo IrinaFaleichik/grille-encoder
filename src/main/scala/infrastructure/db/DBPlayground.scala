@@ -1,4 +1,4 @@
-package infrastructure.db
+package irka.grilleEncoder.infrastructure.db
 
 // TODO unsafe + no concurrency + IDK how to specify the path
 

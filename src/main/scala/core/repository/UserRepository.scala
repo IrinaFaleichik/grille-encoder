@@ -1,4 +1,4 @@
-package core.repository
+package irka.grilleEncoder.core.repository
 
 import domain.model.User
 import zio.*

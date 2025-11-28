@@ -1,4 +1,4 @@
-package infrastructure.db
+package irka.grilleEncoder.infrastructure.db
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill

@@ -1,4 +1,4 @@
-package infrastructure.config
+package irka.grilleEncoder.infrastructure.db
 
 // TODO here make a connection to the DB according to ZIO config library
 import zio.IO

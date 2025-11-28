@@ -1,4 +1,4 @@
-package core.repository
+package irka.grilleEncoder.core.repository
 
 import domain.model.Square
 import domain.model.Cardboard

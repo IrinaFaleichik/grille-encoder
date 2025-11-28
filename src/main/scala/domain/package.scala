@@ -1,4 +1,4 @@
-package domain
+package irka.grilleEncoder.domain
 
 package object model {
   final class User()
