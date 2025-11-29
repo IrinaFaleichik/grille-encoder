@@ -1,6 +1,6 @@
 package irka.grilleEncoder.core.repository
 
-import domain.model.User
+import irka.grilleEncoder.domain.model.User
 import zio.*
 
 trait UserRepository {

@@ -1,7 +1,7 @@
 package irka.grilleEncoder.core.repository
 
-import domain.model.Cardboard
-import domain.model.User
+import irka.grilleEncoder.domain.model.Cardboard
+import irka.grilleEncoder.domain.model.User
 import zio.*
 
 trait CardboardRepository {

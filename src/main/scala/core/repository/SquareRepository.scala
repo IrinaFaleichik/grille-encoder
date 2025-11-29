@@ -1,7 +1,7 @@
 package irka.grilleEncoder.core.repository
 
-import domain.model.Square
-import domain.model.Cardboard
+import irka.grilleEncoder.domain.model.Square
+import irka.grilleEncoder.domain.model.Cardboard
 import zio.*
 
 trait SquareRepository {
