@@ -1,7 +1,11 @@
 package irka.grilleEncoder.core.repository
 
+import io.getquill.SnakeCase
+import io.getquill.jdbczio.Quill
+import irka.grilleEncoder.domain.model
 import irka.grilleEncoder.domain.model.Cardboard
 import irka.grilleEncoder.domain.model.User
+import irka.grilleEncoder.infrastructure.db.CardboardRepositoryLive
 import zio.*
 
 trait CardboardRepository {
@@ -34,4 +38,7 @@ object CardboardRepository {
   def delete(cardboardId: String): ZIO[CardboardRepository, Throwable, Unit] = ???
   
   def deleteByUserId(userId: String): ZIO[CardboardRepository, Throwable, Unit] = ???
+
+  ???
+  val live: ZLayer[Quill.Sqlite[SnakeCase], Nothing, CardboardRepositoryLive] = ZLayer.fromFunction(new CardboardRepositoryLive(_))
 }
