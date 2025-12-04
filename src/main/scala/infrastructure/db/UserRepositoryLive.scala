@@ -1,14 +1,14 @@
 package irka.grilleEncoder.infrastructure.db
 
 import irka.grilleEncoder.domain.model.{Cardboard, User}
-import irka.grilleEncoder.infrastructure.db.entities.UserRow
+import irka.grilleEncoder.infrastructure.db.entities.{DBContext, UserRow}
 import io.getquill.*
 import io.getquill.jdbczio.Quill
 import zio.IsSubtypeOfError.impl
 import zio.ZIO
 
 //Example interpreter for a domain repo
-class UserRepositoryLive(ctx: Quill.Sqlite[SnakeCase]) {
+class UserRepositoryLive(ctx: DBContext) {
   // Mapping logic lives here todo move to domain? find the whole user or better just return user id?
   def listCardboards(userId: String): List[Cardboard] = ???
 

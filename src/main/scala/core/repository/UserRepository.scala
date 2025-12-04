@@ -1,6 +1,8 @@
 package irka.grilleEncoder.core.repository
 
 import irka.grilleEncoder.domain.model.User
+import irka.grilleEncoder.infrastructure.db.UserRepositoryLive
+import irka.grilleEncoder.infrastructure.db.entities.DBContext
 import zio.*
 
 trait UserRepository {
@@ -26,4 +28,6 @@ object UserRepository {
   def update(userId: String, name: String): ZIO[UserRepository, Throwable, User] = ???
   
   def delete(userId: String): ZIO[UserRepository, Throwable, Unit] = ???
+
+  def live(ctx: DBContext): ZLayer[DBContext, Nothing, UserRepositoryLive] = ZLayer.fromFunction(new UserRepositoryLive(_))
 }

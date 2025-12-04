@@ -2,7 +2,7 @@ package irka.grilleEncoder
 package infrastructure.db
 
 import domain.model.{Cardboard, CardboardId, Point, Square, User}
-import infrastructure.db.entities.{CardboardRow, SquareRow}
+import infrastructure.db.entities.{CardboardRow, DBContext, SquareRow}
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill
@@ -11,7 +11,7 @@ import zio.ZIO
 
 import java.sql.SQLException
 
-class SquareRepositoryLive(ctx: Quill.Sqlite[SnakeCase]) {
+class SquareRepositoryLive(ctx: DBContext) {
   // Mapping logic lives here todo move to domain? find the whole user or better just return user id?
   def findCardboard(cardboardId: CardboardId): Cardboard = ???
 

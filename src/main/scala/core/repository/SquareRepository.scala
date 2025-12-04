@@ -2,6 +2,8 @@ package irka.grilleEncoder.core.repository
 
 import irka.grilleEncoder.domain.model.Square
 import irka.grilleEncoder.domain.model.Cardboard
+import irka.grilleEncoder.infrastructure.db.SquareRepositoryLive
+import irka.grilleEncoder.infrastructure.db.entities.DBContext
 import zio.*
 
 trait SquareRepository {
@@ -36,4 +38,6 @@ object SquareRepository {
   def delete(cardboardId: String, squareId: Int): ZIO[SquareRepository, Throwable, Unit] = ???
   
   def deleteByCardboardId(cardboardId: String): ZIO[SquareRepository, Throwable, Unit] = ???
+  
+  def live(ctx: DBContext): ZLayer[DBContext, Nothing, SquareRepositoryLive] = ZLayer.fromFunction(new SquareRepositoryLive(_))
 }

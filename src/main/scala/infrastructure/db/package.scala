@@ -1,5 +1,7 @@
 package irka.grilleEncoder.infrastructure.db
 
+import io.getquill.SnakeCase
+import io.getquill.jdbczio.Quill
 import irka.grilleEncoder.domain.model.{CardboardId, SquareId, UserId}
 
 // DB entities (what maps to tables)
@@ -17,4 +19,6 @@ package object entities {
                       )
   
   final case class UserRow(id: UserId, name: String)
+
+  type DBContext = Quill.Sqlite[SnakeCase]
 }
