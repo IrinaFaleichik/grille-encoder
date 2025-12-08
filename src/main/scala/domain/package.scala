@@ -4,6 +4,9 @@ package object model {
   import zio.json.{JsonEncoder, JsonDecoder, DeriveJsonEncoder, DeriveJsonDecoder}
 
   final type UserId = String
+  final type CardboardId = String
+  final type SquareId = String
+
   final case class User(id: UserId, name: String, cardboards: List[Cardboard])
 
   object User {
@@ -12,14 +15,12 @@ package object model {
   }
   final class Text // todo to put under the cardboard?????
 
-  final type CardboardId = String
-  final case class Cardboard(id: CardboardId, name: String, squares: List[Square], user: User)
+  final case class Cardboard(id: CardboardId, name: String, squares: List[Square], userId: UserId)
   object Cardboard {
     implicit val encoder: JsonEncoder[Cardboard] = DeriveJsonEncoder.gen[Cardboard]
     implicit val decoder: JsonDecoder[Cardboard] = DeriveJsonDecoder.gen[Cardboard]
   }
 
-  final type SquareId = String
   final case class Square(id: SquareId, start: Point, end: Point, cardboard: Cardboard)
 
   object Square {
