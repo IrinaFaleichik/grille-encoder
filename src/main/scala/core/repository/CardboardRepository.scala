@@ -4,20 +4,17 @@ import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
 import irka.grilleEncoder.domain.model
 import irka.grilleEncoder.domain.model.{Cardboard, Square, User}
-import irka.grilleEncoder.infrastructure.db.{CardboardRepositoryLive, DBService}
+import irka.grilleEncoder.infrastructure.db.DBService
 import irka.grilleEncoder.infrastructure.db.entities.{CardboardRow, DBContext}
 import zio.*
 
-import scala.language.implicitConversions
+trait CardboardRepository {
 
-trait CardboardRepository(DBService: DBService) {
-
-  private def findUser(userId: String): User = ???
   //    def countPicturesOf(topic: String): ZIO[Any, Nothing, Int]
 
   def create(cardboard: Cardboard): Task[Cardboard]
 
-  def get(cardboard: Cardboard): Task[List[Cardboard]]
+  def get: ZIO[CardboardRepository, Throwable, List[Cardboard]]
 
   def update(cardboard: Cardboard): Task[Cardboard]
 
