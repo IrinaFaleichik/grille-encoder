@@ -3,7 +3,7 @@ package infrastructure.db.repository.cardboard
 
 import domain.model.{Cardboard, Square, User}
 import infrastructure.db.entities.{CardboardRow, DBContext}
-import infrastructure.db.{DBService, DataService, Students}
+import infrastructure.db.{DataService, Students}
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill
@@ -25,7 +25,7 @@ final class CardboardRepositoryDefault(ctx: DBContext) extends CardboardReposito
     ctx.run(insertValues(batch))
   }
 
-  private def create(cardboard: Cardboard): ZIO[Any, SQLException, List[Long]] = insert(List(cardboard))
+  override def create(cardboard: Cardboard): ZIO[Any, SQLException, List[Long]] = insert(List(cardboard))
 
   override def get: ZIO[Any, SQLException, List[CardboardRow]] = ctx.run(query[CardboardRow])
 
@@ -37,6 +37,7 @@ final class CardboardRepositoryDefault(ctx: DBContext) extends CardboardReposito
 
 object CardboardRepositoryDefault {
 
+  // todo check collisions
   def create(cardboard: Cardboard): ZIO[CardboardRepositoryDefault, SQLException, List[Long]] = {
     ZIO.serviceWithZIO[CardboardRepositoryDefault](_.create(cardboard))
   }

@@ -2,42 +2,24 @@ package irka.grilleEncoder.core.repository
 
 import irka.grilleEncoder.domain.model.Square
 import irka.grilleEncoder.domain.model.Cardboard
-import irka.grilleEncoder.infrastructure.db.SquareRepositoryLive
-import irka.grilleEncoder.infrastructure.db.entities.DBContext
+import irka.grilleEncoder.infrastructure.db.entities.{DBContext, SquareRow}
 import zio.*
 
 trait SquareRepository {
-  def create(square: Square): Task[Square]
+  def create(square: Square): Task[List[Long]]
 
+  def get: Task[List[SquareRow]]
   // todo delete method?
-  def findByCompositeKey(cardboard: Cardboard, square: Square): Task[Option[Square]]
+//  def findByCompositeKey(cardboard: Cardboard, square: Square): Task[Option[Square]]
+//
+//  def findByCardboardId(cardboardId: String): Task[List[Square]]
 
-  def findByCardboardId(cardboardId: String): Task[List[Square]]
-
-  def findAll: Task[List[Square]]
+//  def findAll: Task[List[Square]]
   
-  def update(square: Square): Task[Square]
+  def update(square: Square): Task[SquareRow]
   
-  def delete(square: Square): Task[Unit] // todo return Square or number of deleted squares + CHECK THE DELETE IN OBJECT
+  def delete(square: Square): Task[SquareRow] // todo return Square or number of deleted squares + CHECK THE DELETE IN OBJECT
   
   // Cascade delete when cardboard is deleted (if not handled at DB level)
-  def deleteByCardboardId(cardboardId: String): Task[Unit]
-}
-
-object SquareRepository {
-  def create(): ZIO[SquareRepository, Throwable, Square] = ???
-  
-  def findByCompositeKey(cardboardId: String, squareId: Int): ZIO[SquareRepository, Throwable, Option[Square]] = ???
-  
-  def findByCardboardId(cardboardId: String): ZIO[SquareRepository, Throwable, List[Square]] = ???
-  
-  def findAll: ZIO[SquareRepository, Throwable, List[Square]] = ???
-  
-  def update(square: Square): ZIO[SquareRepository, Throwable, Square] = ???
-  
-  def delete(cardboardId: String, squareId: Int): ZIO[SquareRepository, Throwable, Unit] = ???
-  
-  def deleteByCardboardId(cardboardId: String): ZIO[SquareRepository, Throwable, Unit] = ???
-  
-  def live(ctx: DBContext): ZLayer[DBContext, Nothing, SquareRepositoryLive] = ZLayer.fromFunction(new SquareRepositoryLive(_))
+//  def deleteByCardboardId(cardboardId: String): Task[Unit]
 }

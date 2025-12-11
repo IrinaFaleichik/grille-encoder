@@ -1,33 +1,17 @@
 package irka.grilleEncoder.core.repository
 
 import irka.grilleEncoder.domain.model.User
-import irka.grilleEncoder.infrastructure.db.UserRepositoryLive
-import irka.grilleEncoder.infrastructure.db.entities.DBContext
+import irka.grilleEncoder.infrastructure.db.entities.{DBContext, UserRow}
 import zio.*
 
 trait UserRepository {
-  def create(user: User): Task[User]
+  def create(user: User): Task[List[Long]]
   
-  def findById(user: User): Task[Option[User]]
+//  def findById(user: User): Task[Option[User]]
   
-  def findAll: Task[List[User]]
+  def get: Task[List[UserRow]]
   
-  def update(user: User): Task[User]
+  def update(user: User): Task[UserRow]
   
-  def delete(user: User): Task[Unit] // todo return User or number of deleted users + CHECK THE DELETE IN OBJECT
-}
-
-// TODO implement it later
-object UserRepository {
-  def create(name: String): ZIO[UserRepository, Throwable, User] = ???
-  
-  def findById(userId: String): ZIO[UserRepository, Throwable, Option[User]] = ???
-  
-  def findAll: ZIO[UserRepository, Throwable, List[User]] = ???
-  
-  def update(userId: String, name: String): ZIO[UserRepository, Throwable, User] = ???
-  
-  def delete(userId: String): ZIO[UserRepository, Throwable, Unit] = ???
-
-  def live(ctx: DBContext): ZLayer[DBContext, Nothing, UserRepositoryLive] = ZLayer.fromFunction(new UserRepositoryLive(_))
+  def delete(user: User): Task[UserRow] // todo return User or number of deleted users + CHECK THE DELETE IN OBJECT
 }
