@@ -1,7 +1,6 @@
 package irka.grilleEncoder
 package infrastructure.db.repository.cardboard
 
-import core.repository.*
 import domain.model.{Cardboard, Square, User}
 import infrastructure.db.entities.{CardboardRow, DBContext}
 import infrastructure.db.{DBService, DataService, Students}
@@ -14,30 +13,21 @@ import zio.{Task, ZIO, ZLayer}
 import java.sql.SQLException
 import scala.language.implicitConversions
 
-sealed trait CardboardRepositoryCommon(ctx: DBContext) extends CardboardRepository {
-
-  // todo is it necessary to be implicit?
-  implicit def toRow(cardboard: Cardboard): CardboardRow = CardboardRow(cardboard.id, cardboard.name, cardboard.userId)
-//  implicit def toDomain(row: CardboardRow, squares: List[Square]): Cardboard = Cardboard(row.id, row.name, squares, row.userId)
-// todo do I need implicit toDomain?
-}
-
-final class CardboardRepositoryDefault(ctx: DBContext) extends CardboardRepositoryCommon(ctx) {
+final class CardboardRepositoryDefault(ctx: DBContext) extends CardboardRepository(ctx) {
 
   import ctx.*
+
+  private def insertValues(values: List[CardboardRow]) = quote {
+    liftQuery(values).foreach(v => query[CardboardRow].insertValue(v))
+  } // todo make function for 1 value insertion or not?
+
+  private def insert(batch: List[CardboardRow]) = {
+    ctx.run(insertValues(batch))
+  }
 
   private def create(cardboard: Cardboard): ZIO[Any, SQLException, List[Long]] = insert(List(cardboard))
 
   override def get: ZIO[Any, SQLException, List[CardboardRow]] = ctx.run(query[CardboardRow])
-//  def runQuery: ZIO[DBService, SQLException, List[CardboardRow]] = ctx.run(query[CardboardRow])
-
-  override def insertValues(values: List[CardboardRow]) = quote {
-    liftQuery(values).foreach(v => query[CardboardRow].insertValue(v))
-  } // todo make function for 1 value insertion or not?
-
-  override def insert(batch: List[CardboardRow]) = {
-    ctx.run(insertValues(batch))
-  }
 
   override def update(cardboard: Cardboard): ZIO[Any, SQLException, CardboardRow] = ???
 
