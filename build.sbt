@@ -28,9 +28,9 @@ libraryDependencies ++= Seq(
 
 // DB
 libraryDependencies ++= Seq(
-  "mysql" % "mysql-connector-java" % "8.0.33",
-  "org.flywaydb" % "flyway-core" % "10.12.0",
-  "org.xerial" % "sqlite-jdbc" % "3.50.3.0" % "SQLITE_OMIT_FOREIGN_KEY", //SQLITE_OMIT_FOREIGN_KEY
+//  "mysql" % "mysql-connector-java" % "8.0.33",
+//  "org.flywaydb" % "flyway-core" % "10.12.0",
+  "org.xerial" % "sqlite-jdbc" % "3.50.3.0", //% "SQLITE_OMIT_FOREIGN_KEY", //SQLITE_OMIT_FOREIGN_KEY
   "io.getquill" %% "quill-jdbc-zio" % "4.7.3",
   "io.getquill" %% "quill-jdbc" % "4.7.3"
   // Syncronous JDBC Modules

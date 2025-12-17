@@ -6,21 +6,20 @@ import irka.grilleEncoder.domain.model.{CardboardId, SquareId, UserId}
 
 // DB entities (what maps to tables)
 package object entities {
-  sealed trait RowObject
+  enum RowObject {
+    case Cardboard(id: CardboardId, name: String, userId: String)
 
-  final case class CardboardRow(id: CardboardId, name: String, userId: String) extends RowObject
+    case Square(
+                             id: SquareId,
+                             cardboardId: CardboardId, // Foreign key from cardboard.id, required
+                             startX: Int,
+                             startY: Int,
+                             endX: Int,
+                             endY: Int
+                           )
 
-  final case class SquareRow(
-                        id: SquareId,
-                        cardboardId: CardboardId, // Foreign key from cardboard.id, required
-                        startX: Int,
-                        startY: Int,
-                        endX: Int,
-                        endY: Int
-                      ) extends RowObject
-  
-  final case class UserRow(id: UserId, name: String) extends RowObject
-
+    case User(id: UserId, name: String)
+  }
   type DBContext = Quill.Sqlite[SnakeCase]
   object DBContext {
     val namingStrategy = SnakeCase

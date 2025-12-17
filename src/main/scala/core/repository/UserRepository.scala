@@ -1,7 +1,7 @@
 package irka.grilleEncoder.core.repository
 
 import irka.grilleEncoder.domain.model.User
-import irka.grilleEncoder.infrastructure.db.entities.{DBContext, UserRow}
+import irka.grilleEncoder.infrastructure.db.entities.{DBContext, RowObject}
 import zio.*
 
 trait UserRepository {
@@ -9,9 +9,9 @@ trait UserRepository {
   
 //  def findById(user: User): Task[Option[User]]
   
-  def get: Task[List[UserRow]]
+  def get: Task[List[User]]
   
-  def update(user: User): Task[UserRow]
+  def update(user: User): Task[User]
   
-  def delete(user: User): Task[UserRow] // todo return User or number of deleted users + CHECK THE DELETE IN OBJECT
+  def delete(user: User): Task[User] // todo return User or number of deleted users + CHECK THE DELETE IN OBJECT
 }

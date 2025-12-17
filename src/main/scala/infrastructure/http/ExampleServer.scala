@@ -3,6 +3,7 @@ package irka.grilleEncoder.infrastructure.http
 import zio.*
 import zio.http.*
 import irka.grilleEncoder.infrastructure.db.*
+import irka.grilleEncoder.domain.model.*
 import irka.grilleEncoder.infrastructure
 import zio.json.EncoderOps
 
@@ -31,9 +32,9 @@ object ExampleServer extends ZIOAppDefault {
 
   val studentsRoutes =
     Routes(
-      Method.GET / "students" -> handler {
-        infrastructure.db.Api.getStudents.map { students =>
-          Response.text(students.toJson)
+      Method.GET / "users" -> handler {
+        infrastructure.db.Api.getUsers.map { user =>
+          Response.text(user.toJson)
         }
       }
     )

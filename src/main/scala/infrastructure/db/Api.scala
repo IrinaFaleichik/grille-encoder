@@ -1,11 +1,11 @@
 package irka.grilleEncoder.infrastructure.db
 
-import irka.grilleEncoder.infrastructure.db.entities.{CardboardRow, DBContext, RowObject, SquareRow, UserRow}
+import irka.grilleEncoder.infrastructure.db.entities.{DBContext, RowObject}
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import io.getquill.jdbczio.Quill
 import io.getquill.{SnakeCase, SqliteDialect}
 import irka.grilleEncoder.domain.model.{Cardboard, Square, User}
-import zio.{IO, Task, ULayer, ZIO, ZLayer}
+import zio.{ExitCode, IO, Task, ULayer, URIO, ZIO, ZIOAppDefault, ZLayer}
 
 import java.sql.{Connection, SQLException}
 import java.util.Properties
@@ -24,7 +24,7 @@ object Api {
   lazy val con = Quill.DataSource.fromPrefix("myDatabaseConfig")
 
   /* Cardboard */
-  def getCardboards: Task[List[CardboardRow]] =
+  def getCardboards: Task[List[RowObject.Cardboard]] =
     CardboardRepositoryDefault.get
       .provide(cardboardRepositoryDefault, ctx, con)
 
@@ -32,17 +32,17 @@ object Api {
     CardboardRepositoryDefault.create(cardboard)
       .provide(cardboardRepositoryDefault, ctx, con)
 
-  def updateCardboard(cardboard: Cardboard): Task[CardboardRow] =
+  def updateCardboard(cardboard: Cardboard): Task[Cardboard] =
     CardboardRepositoryDefault.update(cardboard)
       .provide(cardboardRepositoryDefault, ctx, con)
 
-  def deleteCardboard(cardboard: Cardboard): Task[CardboardRow] =
+  def deleteCardboard(cardboard: Cardboard): Task[Cardboard] =
     CardboardRepositoryDefault.delete(cardboard)
       .provide(cardboardRepositoryDefault, ctx, con)
 
   /* Square */
   
-  def getSquares: Task[List[SquareRow]] =
+  def getSquares: Task[List[Square]] =
     SquareRepositoryDefault.get
       .provide(squareRepositoryDefault, ctx, con)
 
@@ -50,17 +50,17 @@ object Api {
     SquareRepositoryDefault.create(square)
       .provide(squareRepositoryDefault, ctx, con)
 
-  def updateSquare(square: Square): Task[SquareRow] =
+  def updateSquare(square: Square): Task[Square] =
     SquareRepositoryDefault.update(square)
       .provide(squareRepositoryDefault, ctx, con)
 
-  def deleteSquare(square: Square): Task[SquareRow] =
+  def deleteSquare(square: Square): Task[Square] =
     SquareRepositoryDefault.delete(square)
       .provide(squareRepositoryDefault, ctx, con)
 
   /* User */
 
-  def getUsers: Task[List[UserRow]] =
+  def getUsers: Task[List[User]] =
     UserRepositoryDefault.get
       .provide(userRepositoryDefault, ctx, con)
 
@@ -68,12 +68,18 @@ object Api {
     UserRepositoryDefault.create(user)
       .provide(userRepositoryDefault, ctx, con)
 
-  def updateUser(user: User): Task[UserRow] =
+  def updateUser(user: User): Task[User] =
     UserRepositoryDefault.update(user)
       .provide(userRepositoryDefault, ctx, con)
 
-  def deleteUser(user: User): Task[UserRow] =
+  def deleteUser(user: User): Task[User] =
     UserRepositoryDefault.delete(user)
       .provide(userRepositoryDefault, ctx, con)
 
+}
+
+object test extends ZIOAppDefault {
+      override def run: URIO[Any, ExitCode] = {
+        Api.getUsers.debug("Results").exitCode
+      }
 }

@@ -2,7 +2,7 @@ package irka.grilleEncoder
 package infrastructure.db.repository.square
 
 import domain.model.{Square, Cardboard}
-import infrastructure.db.entities.{SquareRow, DBContext}
+import infrastructure.db.entities.{RowObject, DBContext}
 import infrastructure.db.{DataService, Students}
 import io.getquill.*
 import io.getquill.jdbczio.Quill
@@ -15,21 +15,22 @@ final class SquareRepositoryDefault(ctx: DBContext) extends SquareRepository {
 
   import ctx.*
 
-  private def insertValues(values: List[SquareRow]) = quote {
-    liftQuery(values).foreach(v => query[SquareRow].insertValue(v))
+  private def insertValues(values: List[RowObject.Square]) = quote {
+    liftQuery(values).foreach(v => query[RowObject.Square].insertValue(v))
   } // todo make function for 1 value insertion or not?
 
-  private def insert(batch: List[SquareRow]) = {
+  private def insert(batch: List[RowObject.Square]) = {
     ctx.run(insertValues(batch))
   }
 
   override def create(square: Square): ZIO[Any, SQLException, List[Long]] = insert(List(toRow(square)))
 
-  override def get: ZIO[Any, SQLException, List[SquareRow]] = ctx.run(query[SquareRow])
+  private def getHelper: ZIO[Any, SQLException, List[RowObject.Square]] = ctx.run(query[RowObject.Square])
+  override def get: ZIO[Any, SQLException, List[Square]] = getHelper.map(_.map(toDomain))
 
-  override def update(square: Square): ZIO[Any, SQLException, SquareRow] = ???
+  override def update(square: Square): ZIO[Any, SQLException, Square] = ???
 
-  override def delete(square: Square): ZIO[Any, SQLException, SquareRow] = ??? // todo return Square or number of deleted Squares + CHECK THE DELETE IN OBJECT
+  override def delete(square: Square): ZIO[Any, SQLException, Square] = ??? // todo return Square or number of deleted Squares + CHECK THE DELETE IN OBJECT
 
 }
 
@@ -39,15 +40,15 @@ object SquareRepositoryDefault {
     ZIO.serviceWithZIO[SquareRepositoryDefault](_.create(square))
   }
 
-  def get: ZIO[SquareRepositoryDefault, SQLException, List[SquareRow]] = {
+  def get: ZIO[SquareRepositoryDefault, SQLException, List[Square]] = {
     ZIO.serviceWithZIO[SquareRepositoryDefault](_.get)
   }
 
-  def update(square: Square): ZIO[SquareRepositoryDefault, SQLException, SquareRow] = {
+  def update(square: Square): ZIO[SquareRepositoryDefault, SQLException, Square] = {
     ZIO.serviceWithZIO[SquareRepositoryDefault](_.update(square))
   }
 
-  def delete(square: Square): ZIO[SquareRepositoryDefault, SQLException, SquareRow] = {
+  def delete(square: Square): ZIO[SquareRepositoryDefault, SQLException, Square] = {
     ZIO.serviceWithZIO[SquareRepositoryDefault](_.update(square))
   }
 

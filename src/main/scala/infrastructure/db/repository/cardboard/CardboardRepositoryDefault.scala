@@ -2,7 +2,7 @@ package irka.grilleEncoder
 package infrastructure.db.repository.cardboard
 
 import domain.model.{Cardboard, Square, User}
-import infrastructure.db.entities.{CardboardRow, DBContext}
+import infrastructure.db.entities.{RowObject, DBContext}
 import infrastructure.db.{DataService, Students}
 
 import io.getquill.*
@@ -17,21 +17,21 @@ final class CardboardRepositoryDefault(ctx: DBContext) extends CardboardReposito
 
   import ctx.*
 
-  private def insertValues(values: List[CardboardRow]) = quote {
-    liftQuery(values).foreach(v => query[CardboardRow].insertValue(v))
+  private def insertValues(values: List[RowObject.Cardboard]) = quote {
+    liftQuery(values).foreach(v => query[RowObject.Cardboard].insertValue(v))
   } // todo make function for 1 value insertion or not?
 
-  private def insert(batch: List[CardboardRow]) = {
+  private def insert(batch: List[RowObject.Cardboard]) = {
     ctx.run(insertValues(batch))
   }
 
   override def create(cardboard: Cardboard): ZIO[Any, SQLException, List[Long]] = insert(List(cardboard))
 
-  override def get: ZIO[Any, SQLException, List[CardboardRow]] = ctx.run(query[CardboardRow])
+  override def get: ZIO[Any, SQLException, List[RowObject.Cardboard]] = ctx.run(query[RowObject.Cardboard])
 
-  override def update(cardboard: Cardboard): ZIO[Any, SQLException, CardboardRow] = ???
+  override def update(cardboard: Cardboard): ZIO[Any, SQLException, Cardboard] = ???
 
-  override def delete(cardboard: Cardboard): ZIO[Any, SQLException, CardboardRow] = ??? // todo return Cardboard or number of deleted cardboards + CHECK THE DELETE IN OBJECT
+  override def delete(cardboard: Cardboard): ZIO[Any, SQLException, Cardboard] = ??? // todo return Cardboard or number of deleted cardboards + CHECK THE DELETE IN OBJECT
 
 }
 
@@ -42,15 +42,15 @@ object CardboardRepositoryDefault {
     ZIO.serviceWithZIO[CardboardRepositoryDefault](_.create(cardboard))
   }
 
-  def get: ZIO[CardboardRepositoryDefault, SQLException, List[CardboardRow]] = {
+  def get: ZIO[CardboardRepositoryDefault, SQLException, List[RowObject.Cardboard]] = {
     ZIO.serviceWithZIO[CardboardRepositoryDefault](_.get)
   }
 
-  def update(cardboard: Cardboard): ZIO[CardboardRepositoryDefault, SQLException, CardboardRow] = {
+  def update(cardboard: Cardboard): ZIO[CardboardRepositoryDefault, SQLException, Cardboard] = {
     ZIO.serviceWithZIO[CardboardRepositoryDefault](_.update(cardboard))
   }
 
-  def delete(cardboard: Cardboard): ZIO[CardboardRepositoryDefault, SQLException, CardboardRow] = {
+  def delete(cardboard: Cardboard): ZIO[CardboardRepositoryDefault, SQLException, Cardboard] = {
     ZIO.serviceWithZIO[CardboardRepositoryDefault](_.update(cardboard))
   }
 

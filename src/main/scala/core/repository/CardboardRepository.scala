@@ -4,7 +4,7 @@ import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
 import irka.grilleEncoder.domain.model
 import irka.grilleEncoder.domain.model.{Cardboard, Square, User}
-import irka.grilleEncoder.infrastructure.db.entities.{CardboardRow, DBContext}
+import irka.grilleEncoder.infrastructure.db.entities.{RowObject, DBContext}
 import zio.*
 
 import java.sql.SQLException
@@ -13,10 +13,10 @@ trait CardboardRepository {
 
   def create(cardboard: Cardboard): ZIO[Any, SQLException, List[Long]]
 
-  def get: ZIO[Any, SQLException, List[CardboardRow]]
+  def get: ZIO[Any, SQLException, List[RowObject.Cardboard]]
 
-  def update(cardboard: Cardboard): Task[CardboardRow]
+  def update(cardboard: Cardboard): Task[Cardboard]
 
-  def delete(cardboard: Cardboard): Task[CardboardRow] // todo return Cardboard or number of deleted cardboards + CHECK THE DELETE IN OBJECT
+  def delete(cardboard: Cardboard): Task[Cardboard] // todo return Cardboard or number of deleted cardboards + CHECK THE DELETE IN OBJECT
 
 }

@@ -2,7 +2,7 @@ package irka.grilleEncoder
 package infrastructure.db.repository.user
 
 import domain.model.{Cardboard, User}
-import infrastructure.db.entities.{DBContext, UserRow}
+import infrastructure.db.entities.{DBContext, RowObject}
 import infrastructure.db.{DataService, Students}
 
 import io.getquill.*
@@ -17,21 +17,22 @@ final class UserRepositoryDefault(ctx: DBContext) extends UserRepository {
 
   import ctx.*
 
-  private def insertValues(values: List[UserRow]) = quote {
-    liftQuery(values).foreach(v => query[UserRow].insertValue(v))
+  private def insertValues(values: List[RowObject.User]) = quote {
+    liftQuery(values).foreach(v => query[RowObject.User].insertValue(v))
   } // todo make function for 1 value insertion or not?
 
-  private def insert(batch: List[UserRow]) = {
+  private def insert(batch: List[RowObject.User]) = {
     ctx.run(insertValues(batch))
   }
 
   override def create(user: User): ZIO[Any, SQLException, List[Long]] = insert(List(toRow(user)))
 
-  override def get: ZIO[Any, SQLException, List[UserRow]] = ctx.run(query[UserRow])
+  override def get: ZIO[Any, SQLException, List[User]] = get1.map(_.map(toDomain))
+  def get1: ZIO[Any, SQLException, List[RowObject.User]] = ctx.run(query[RowObject.User])
 
-  override def update(user: User): ZIO[Any, SQLException, UserRow] = ???
+  override def update(user: User): ZIO[Any, SQLException, User] = ???
 
-  override def delete(user: User): ZIO[Any, SQLException, UserRow] = ??? // todo return User or number of deleted Users + CHECK THE DELETE IN OBJECT
+  override def delete(user: User): ZIO[Any, SQLException, User] = ??? // todo return User or number of deleted Users + CHECK THE DELETE IN OBJECT
 
 }
 
@@ -41,15 +42,15 @@ object UserRepositoryDefault {
     ZIO.serviceWithZIO[UserRepositoryDefault](_.create(user))
   }
 
-  def get: ZIO[UserRepositoryDefault, SQLException, List[UserRow]] = {
+  def get: ZIO[UserRepositoryDefault, SQLException, List[User]] = {
     ZIO.serviceWithZIO[UserRepositoryDefault](_.get)
   }
 
-  def update(user: User): ZIO[UserRepositoryDefault, SQLException, UserRow] = {
+  def update(user: User): ZIO[UserRepositoryDefault, SQLException, User] = {
     ZIO.serviceWithZIO[UserRepositoryDefault](_.update(user))
   }
 
-  def delete(user: User): ZIO[UserRepositoryDefault, SQLException, UserRow] = {
+  def delete(user: User): ZIO[UserRepositoryDefault, SQLException, User] = {
     ZIO.serviceWithZIO[UserRepositoryDefault](_.update(user))
   }
 
