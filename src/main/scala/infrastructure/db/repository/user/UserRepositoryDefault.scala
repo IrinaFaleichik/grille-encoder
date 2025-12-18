@@ -3,7 +3,6 @@ package infrastructure.db.repository.user
 
 import domain.model.{Cardboard, User}
 import infrastructure.db.entities.{DBContext, RowObject}
-import infrastructure.db.{DataService, Students}
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill

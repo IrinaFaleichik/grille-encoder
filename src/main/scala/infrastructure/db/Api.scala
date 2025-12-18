@@ -77,9 +77,9 @@ object Api {
       .provide(userRepositoryDefault, ctx, con)
 
 }
-
-object test extends ZIOAppDefault {
-      override def run: URIO[Any, ExitCode] = {
-        Api.getUsers.debug("Results").exitCode
-      }
-}
+//
+//object test extends ZIOAppDefault {
+//      override def run: URIO[Any, ExitCode] = {
+//        Api.getUsers.debug("Results").exitCode
+//      }
+//}

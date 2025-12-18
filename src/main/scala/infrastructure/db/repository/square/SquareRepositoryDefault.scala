@@ -3,7 +3,6 @@ package infrastructure.db.repository.square
 
 import domain.model.{Square, Cardboard}
 import infrastructure.db.entities.{RowObject, DBContext}
-import infrastructure.db.{DataService, Students}
 import io.getquill.*
 import io.getquill.jdbczio.Quill
 import zio.IsSubtypeOfError.impl
