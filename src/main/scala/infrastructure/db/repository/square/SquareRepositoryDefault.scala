@@ -2,7 +2,7 @@ package irka.grilleEncoder
 package infrastructure.db.repository.square
 
 import domain.model.{Square, Cardboard}
-import infrastructure.db.entities.{RowObject, DBContext}
+import infrastructure.db.entities.{TableEntity, DBContext}
 import io.getquill.*
 import io.getquill.jdbczio.Quill
 import zio.IsSubtypeOfError.impl
@@ -14,17 +14,17 @@ final class SquareRepositoryDefault(ctx: DBContext) extends SquareRepository {
 
   import ctx.*
 
-  private def insertValues(values: List[RowObject.Square]) = quote {
-    liftQuery(values).foreach(v => query[RowObject.Square].insertValue(v))
+  private def insertValues(values: List[TableEntity.Square]) = quote {
+    liftQuery(values).foreach(v => query[TableEntity.Square].insertValue(v))
   } // todo make function for 1 value insertion or not?
 
-  private def insert(batch: List[RowObject.Square]) = {
+  private def insert(batch: List[TableEntity.Square]) = {
     ctx.run(insertValues(batch))
   }
 
   override def create(square: Square): ZIO[Any, SQLException, List[Long]] = insert(List(toRow(square)))
 
-  private def getHelper: ZIO[Any, SQLException, List[RowObject.Square]] = ctx.run(query[RowObject.Square])
+  private def getHelper: ZIO[Any, SQLException, List[TableEntity.Square]] = ctx.run(query[TableEntity.Square])
   override def get: ZIO[Any, SQLException, List[Square]] = getHelper.map(_.map(toDomain))
 
   override def update(square: Square): ZIO[Any, SQLException, Square] = ???

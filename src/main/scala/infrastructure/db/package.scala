@@ -6,7 +6,7 @@ import irka.grilleEncoder.domain.model.{CardboardId, SquareId, UserId}
 
 // DB entities (what maps to tables)
 package object entities {
-  enum RowObject {
+  enum TableEntity {
     case Cardboard(id: CardboardId, name: String, userId: String)
 
     case Square(
@@ -22,6 +22,6 @@ package object entities {
   }
   type DBContext = Quill.Sqlite[SnakeCase]
   object DBContext {
-    val namingStrategy = SnakeCase
+    val namingStrategy: SnakeCase.type = SnakeCase
   }
 }

@@ -1,8 +1,8 @@
 package irka.grilleEncoder
 package infrastructure.db.repository.cardboard
 
-import domain.model.{Cardboard, Square, User}
-import infrastructure.db.entities.{RowObject, DBContext}
+import domain.model.Cardboard
+import infrastructure.db.entities.{DBContext, TableEntity}
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill
@@ -16,17 +16,17 @@ final class CardboardRepositoryDefault(ctx: DBContext) extends CardboardReposito
 
   import ctx.*
 
-  private def insertValues(values: List[RowObject.Cardboard]) = quote {
-    liftQuery(values).foreach(v => query[RowObject.Cardboard].insertValue(v))
+  private def insertValues(values: List[TableEntity.Cardboard]) = quote {
+    liftQuery(values).foreach(v => query[TableEntity.Cardboard].insertValue(v))
   } // todo make function for 1 value insertion or not?
 
-  private def insert(batch: List[RowObject.Cardboard]) = {
+  private def insert(batch: List[TableEntity.Cardboard]) = {
     ctx.run(insertValues(batch))
   }
 
   override def create(cardboard: Cardboard): ZIO[Any, SQLException, List[Long]] = insert(List(cardboard))
 
-  override def get: ZIO[Any, SQLException, List[RowObject.Cardboard]] = ctx.run(query[RowObject.Cardboard])
+  override def get: ZIO[Any, SQLException, List[TableEntity.Cardboard]] = ctx.run(query[TableEntity.Cardboard])
 
   override def update(cardboard: Cardboard): ZIO[Any, SQLException, Cardboard] = ???
 
@@ -41,7 +41,7 @@ object CardboardRepositoryDefault {
     ZIO.serviceWithZIO[CardboardRepositoryDefault](_.create(cardboard))
   }
 
-  def get: ZIO[CardboardRepositoryDefault, SQLException, List[RowObject.Cardboard]] = {
+  def get: ZIO[CardboardRepositoryDefault, SQLException, List[TableEntity.Cardboard]] = {
     ZIO.serviceWithZIO[CardboardRepositoryDefault](_.get)
   }
 

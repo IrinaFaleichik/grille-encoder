@@ -1,12 +1,25 @@
 package irka.grilleEncoder.infrastructure.http
 
+import io.getquill.SnakeCase
+import io.getquill.jdbczio.Quill
 import zio.*
 import zio.http.*
 import irka.grilleEncoder.domain.model.*
 import irka.grilleEncoder.infrastructure
+import irka.grilleEncoder.infrastructure.db
+import irka.grilleEncoder.infrastructure.db.entities
+import irka.grilleEncoder.infrastructure.db.repository.user.UserRepositoryDefault
 import zio.json.EncoderOps
 
+import java.sql.SQLException
+import javax.sql.DataSource
+
 object ExampleServer extends ZIOAppDefault {
+
+  lazy val ctx: ZLayer[DataSource, Nothing, Quill.Sqlite[SnakeCase.type]] = Quill.Sqlite.fromNamingStrategy(entities.DBContext.namingStrategy) // context to write queries
+  lazy val con: ZLayer[Any, Throwable, DataSource] = Quill.DataSource.fromPrefix("myDatabaseConfig")
+
+  val appLayer = con >>> ctx >>> UserRepositoryDefault.live
 
   // A route that matches GET requests to /greet
   // It doesn't require any service from the ZIO environment
@@ -29,12 +42,14 @@ object ExampleServer extends ZIOAppDefault {
       req.body.asString.map(Response.text(_))
     }
 
-  val studentsRoutes =
+  val userRoutes: Routes[Any, Throwable] =
     Routes(
       Method.GET / "users" -> handler {
-        infrastructure.db.Api.getUsers.map { user =>
-          Response.text(user.toJson)
-        }
+        UserRepositoryDefault.get
+          .provide(appLayer)
+          .map { users =>
+            Response.text(users.toJson)
+          }
       }
     )
 
@@ -45,7 +60,7 @@ object ExampleServer extends ZIOAppDefault {
     // List of all the routes
     Routes(greetRoute, echoRoute)
       // Handle all unhandled errors
-      .++(studentsRoutes)
+      .++(userRoutes)
       .handleError(e => Response.internalServerError(e.getMessage))
 
   // Serving the routes using the default server layer on port 8080

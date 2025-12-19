@@ -1,7 +1,7 @@
 package irka.grilleEncoder.core.repository
 
 import irka.grilleEncoder.domain.model.User
-import irka.grilleEncoder.infrastructure.db.entities.{DBContext, RowObject}
+import irka.grilleEncoder.infrastructure.db.entities.{DBContext, TableEntity}
 import zio.*
 
 trait UserRepository {

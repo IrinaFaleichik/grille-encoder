@@ -2,7 +2,7 @@ package irka.grilleEncoder
 package infrastructure.db.repository.user
 
 import domain.model.{Cardboard, User}
-import infrastructure.db.entities.{DBContext, RowObject}
+import infrastructure.db.entities.{DBContext, TableEntity}
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill
@@ -16,18 +16,18 @@ final class UserRepositoryDefault(ctx: DBContext) extends UserRepository {
 
   import ctx.*
 
-  private def insertValues(values: List[RowObject.User]) = quote {
-    liftQuery(values).foreach(v => query[RowObject.User].insertValue(v))
+  private def insertValues(values: List[TableEntity.User]) = quote {
+    liftQuery(values).foreach(v => query[TableEntity.User].insertValue(v))
   } // todo make function for 1 value insertion or not?
 
-  private def insert(batch: List[RowObject.User]) = {
+  private def insert(batch: List[TableEntity.User]) = {
     ctx.run(insertValues(batch))
   }
 
   override def create(user: User): ZIO[Any, SQLException, List[Long]] = insert(List(toRow(user)))
 
   override def get: ZIO[Any, SQLException, List[User]] = get1.map(_.map(toDomain))
-  def get1: ZIO[Any, SQLException, List[RowObject.User]] = ctx.run(query[RowObject.User])
+  def get1: ZIO[Any, SQLException, List[TableEntity.User]] = ctx.run(query[TableEntity.User])
 
   override def update(user: User): ZIO[Any, SQLException, User] = ???
 
