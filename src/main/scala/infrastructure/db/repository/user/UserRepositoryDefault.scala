@@ -6,6 +6,7 @@ import infrastructure.db.entities.{DBContext, TableEntity}
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill
+import irka.grilleEncoder.infrastructure.db.{DatabaseSQL, SQLiteDatabase}
 import zio.IsSubtypeOfError.impl
 import zio.{Task, ZIO, ZLayer}
 

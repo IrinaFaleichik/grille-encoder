@@ -24,8 +24,7 @@ trait DatabaseSQL[Dialect <: SqlIdiom, DBName <: Quill[Dialect, NamingStrategy],
 
 // "myDatabaseConfig"
 // todo inject naming strategy? through trait or through generic?
-final class SQLiteDatabase(dbConfig: String,
-                           override val con: sql.DataSource,
+final class SQLiteDatabase(override val con: sql.DataSource,
                            override val ctx: Quill.Sqlite[SnakeCase.type])
   extends DatabaseSQL
 
@@ -37,11 +36,15 @@ object SQLiteDatabase {
 
   //  def init: ZLayer[String, Throwable, SQLiteDatabase] = {}
 
-  lazy val live: ZLayer[DataSource & Quill.Sqlite[SnakeCase.type] & DataSource & String, Throwable, SQLiteDatabase] = {
+  lazy val live: ZLayer[DataSource & Quill.Sqlite[SnakeCase.type], Throwable, SQLiteDatabase] = {
 
-    ZLayer.fromFunction { (prefix: String, ds: sql.DataSource, ctx: Quill.Sqlite[SnakeCase.type]) =>
-      new SQLiteDatabase(prefix, ds, ctx)
+    ZLayer.fromFunction { (ds: sql.DataSource, ctx: Quill.Sqlite[SnakeCase.type]) =>
+      new SQLiteDatabase(ds, ctx)
     }
   }
+
+//  def make(prefix: String, ds: sql.DataSource, ctx: Quill.Sqlite[SnakeCase.type]): SQLiteDatabase = {
+//    new SQLiteDatabase(prefix, ds, ctx)
+//  }
 
 }
