@@ -30,7 +30,7 @@ object AppRoutes {
   // It doesn't require any service from the ZIO environment
   // so the first type parameter is Any
   // All its errors are handled so the second type parameter is Nothing
-  val greetRoute: Route[Any, Nothing] =
+  lazy val greetRoute: Route[Any, Throwable] =
     // The whole Method.GET / "greet" is a RoutePattern
     Method.GET / "greet" ->
       // The handler is a function that takes a Request and returns a Response
@@ -42,12 +42,12 @@ object AppRoutes {
   // A route that matches POST requests to /echo
   // It doesn't require any service from the ZIO environment
   // It is an unhandled route so the second type parameter is something other than Nothing
-  val echoRoute: Route[Any, Throwable] =
+  lazy val echoRoute: Route[Any, Throwable] =
     Method.POST / "echo" -> handler { (req: Request) =>
       req.body.asString.map(Response.text(_))
     }
 
-  val userRoutes: Routes[UserRepositoryDefault, Throwable] = // todo change to Database obj
+  lazy val userRoutes: Routes[UserRepositoryDefault, Throwable] = // todo change to Database obj
     Routes(
       Method.GET / "users" -> handler {
         UserRepositoryDefault.get
