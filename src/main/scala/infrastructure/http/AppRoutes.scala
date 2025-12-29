@@ -21,7 +21,7 @@ object AppRoutes {
   // All the errors are handled by turning them into a Response.
   val routes: Routes[UserRepositoryDefault, Response] =
     // List of all the routes
-    Routes(greetRoute, echoRoute)
+    Routes(greetRoute)
       .++(userRoutes)
       // Handle all unhandled errors
       .handleError(e => Response.internalServerError(e.getMessage))
@@ -38,14 +38,6 @@ object AppRoutes {
         val name = req.queryOrElse[String]("name", "World")
         Response.text(s"Hello $name!")
       }
-
-  // A route that matches POST requests to /echo
-  // It doesn't require any service from the ZIO environment
-  // It is an unhandled route so the second type parameter is something other than Nothing
-  lazy val echoRoute: Route[Any, Throwable] =
-    Method.POST / "echo" -> handler { (req: Request) =>
-      req.body.asString.map(Response.text(_))
-    }
 
   lazy val userRoutes: Routes[UserRepositoryDefault, Throwable] = // todo change to Database obj
     Routes(
