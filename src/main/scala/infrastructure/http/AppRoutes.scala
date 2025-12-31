@@ -1,4 +1,5 @@
 package irka.grilleEncoder.infrastructure.http
+
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
 import zio.*
@@ -9,7 +10,8 @@ import irka.grilleEncoder.infrastructure.db
 import irka.grilleEncoder.infrastructure.db.{SQLiteDatabase, entities}
 import irka.grilleEncoder.infrastructure.db.repository.user.UserRepositoryDefault
 import zio.json.EncoderOps
-
+import zio.json._ // for .fromJson/.toJson
+import zio.http.Body // for req.body.asString
 import java.sql.SQLException
 import javax.sql.DataSource
 
@@ -46,6 +48,20 @@ object AppRoutes {
           .map { users =>
             Response.text(users.toJson)
           }
+      },
+      Method.POST / "user" -> handler { (req: Request) =>
+        req.body.asString.flatMap { json =>
+          json.fromJson[User] match {
+            case Left(err) =>
+              // parsing failed: return 400
+              ZIO.succeed(Response.text(s"Invalid JSON: $err"))
+            case Right(user) =>
+              // parsing succeeded
+              UserRepositoryDefault.create(user)
+                .flatMap(count => ZIO.succeed(Response.text(s"Created user: ${user.toJson}")))
+                .onError{err => ZIO.succeed(Response.text(s"DB error: $err"))}
+          }
+        }
       }
     )
 
