@@ -11,7 +11,7 @@ trait UserRepository {
   
   def get: Task[List[User]]
   
-  def update(user: User): Task[User]
+  def update(user: User): Task[List[Long]]
   
   def delete(user: User): Task[User] // todo return User or number of deleted users + CHECK THE DELETE IN OBJECT
 }

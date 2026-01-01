@@ -27,10 +27,17 @@ final class UserRepositoryDefault(ctx: DBContext) extends UserRepository {
 
   override def create(user: User): ZIO[Any, SQLException, List[Long]] = insert(List(toRow(user)))
 
-  override def get: ZIO[Any, SQLException, List[User]] = get1.map(_.map(toDomain))
-  def get1: ZIO[Any, SQLException, List[TableEntity.User]] = ctx.run(query[TableEntity.User])
+  override def get: ZIO[Any, SQLException, List[User]] = {
+    def getRow: ZIO[Any, SQLException, List[TableEntity.User]] = ctx.run(query[TableEntity.User])
+    getRow.map(_.map(toDomain))
+  }
 
-  override def update(user: User): ZIO[Any, SQLException, User] = ???
+  override def update(user: User): ZIO[Any, SQLException, List[Long]] = {
+    def updateUser(u: List[TableEntity.User]) = quote {
+      liftQuery(u).foreach(v => query[TableEntity.User].updateValue(v))
+    }
+    ctx.run(updateUser(List(toRow(user))))
+  }
 
   override def delete(user: User): ZIO[Any, SQLException, User] = ??? // todo return User or number of deleted Users + CHECK THE DELETE IN OBJECT
 
@@ -46,12 +53,12 @@ object UserRepositoryDefault {
     ZIO.serviceWithZIO[UserRepositoryDefault](_.get)
   }
 
-  def update(user: User): ZIO[UserRepositoryDefault, SQLException, User] = {
+  def update(user: User): ZIO[UserRepositoryDefault, SQLException, List[Long]] = {
     ZIO.serviceWithZIO[UserRepositoryDefault](_.update(user))
   }
 
   def delete(user: User): ZIO[UserRepositoryDefault, SQLException, User] = {
-    ZIO.serviceWithZIO[UserRepositoryDefault](_.update(user))
+    ZIO.serviceWithZIO[UserRepositoryDefault](_.delete(user))
   }
 
   lazy val live: ZLayer[DBContext, Nothing, UserRepositoryDefault] = ZLayer.fromFunction(new UserRepositoryDefault(_))

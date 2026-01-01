@@ -26,7 +26,10 @@ object AppRoutes {
     Routes(greetRoute)
       .++(userRoutes)
       // Handle all unhandled errors
-      .handleError(e => Response.internalServerError(e.getMessage))
+      .handleError {_ match
+        case e: SQLException => Response.internalServerError(e.getMessage)
+        case e => Response.internalServerError(s"DB error: $e.getMessage")
+      }
 
   // A route that matches GET requests to /greet
   // It doesn't require any service from the ZIO environment
@@ -59,7 +62,19 @@ object AppRoutes {
               // parsing succeeded
               UserRepositoryDefault.create(user)
                 .flatMap(count => ZIO.succeed(Response.text(s"Created user: ${user.toJson}")))
-                .onError{err => ZIO.succeed(Response.text(s"DB error: $err"))}
+          }
+        }
+      },
+      Method.POST / "user" / "update" -> handler { (req: Request) =>
+        req.body.asString.flatMap { json =>
+          json.fromJson[User] match {
+            case Left(err) =>
+              // parsing failed: return 400
+              ZIO.succeed(Response.text(s"Invalid JSON: $err"))
+            case Right(user) =>
+              // parsing succeeded
+              UserRepositoryDefault.update(user)
+                .flatMap(count => ZIO.succeed(Response.text(s"Updated user: ${user.toJson}")))
           }
         }
       }
