@@ -21,6 +21,7 @@ object AppRoutes {
   // The Routes that don't require any service from the ZIO environment,
   // so the first type parameter is Any.
   // All the errors are handled by turning them into a Response.
+  //todo implement authentification, basic and through cookie
   val routes: Routes[UserRepositoryDefault, Response] =
     // List of all the routes
     Routes(greetRoute)
@@ -52,7 +53,7 @@ object AppRoutes {
             Response.text(users.toJson)
           }
       },
-      Method.POST / "user" -> handler { (req: Request) =>
+      Method.POST / "user" / "create" -> handler { (req: Request) =>
         req.body.asString.flatMap { json =>
           json.fromJson[User] match {
             case Left(err) =>
