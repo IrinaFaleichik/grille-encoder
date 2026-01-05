@@ -25,7 +25,7 @@ object AppRoutes {
   val routes: Routes[UserRepositoryDefault, Response] =
     // List of all the routes
     Routes(greetRoute)
-      .++(userRoutes)
+      .++(UserRoutes.userRoutes)
       // Handle all unhandled errors
       .handleError {_ match
         case e: SQLException => Response.internalServerError(e.getMessage)
@@ -44,41 +44,5 @@ object AppRoutes {
         val name = req.queryOrElse[String]("name", "World")
         Response.text(s"Hello $name!")
       }
-
-  lazy val userRoutes: Routes[UserRepositoryDefault, Throwable] = // todo change to Database obj
-    Routes(
-      Method.GET / "users" -> handler {
-        UserRepositoryDefault.get
-          .map { users =>
-            Response.text(users.toJson)
-          }
-      },
-      Method.POST / "user" / "create" -> handler { (req: Request) =>
-        req.body.asString.flatMap { json =>
-          json.fromJson[User] match {
-            case Left(err) =>
-              // parsing failed: return 400
-              ZIO.succeed(Response.text(s"Invalid JSON: $err"))
-            case Right(user) =>
-              // parsing succeeded
-              UserRepositoryDefault.create(user)
-                .flatMap(count => ZIO.succeed(Response.text(s"Created user: ${user.toJson}")))
-          }
-        }
-      },
-      Method.POST / "user" / "update" -> handler { (req: Request) =>
-        req.body.asString.flatMap { json =>
-          json.fromJson[User] match {
-            case Left(err) =>
-              // parsing failed: return 400
-              ZIO.succeed(Response.text(s"Invalid JSON: $err"))
-            case Right(user) =>
-              // parsing succeeded
-              UserRepositoryDefault.update(user)
-                .flatMap(count => ZIO.succeed(Response.text(s"Updated user: ${user.toJson}")))
-          }
-        }
-      }
-    )
 
 }
