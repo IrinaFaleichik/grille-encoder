@@ -1,19 +1,10 @@
 package irka.grilleEncoder.infrastructure.http
 
-import io.getquill.SnakeCase
-import io.getquill.jdbczio.Quill
 import zio.*
 import zio.http.*
-import irka.grilleEncoder.domain.model.*
-import irka.grilleEncoder.infrastructure
 import irka.grilleEncoder.infrastructure.db
-import irka.grilleEncoder.infrastructure.db.{SQLiteDatabase, entities}
 import irka.grilleEncoder.infrastructure.db.repository.user.UserRepositoryDefault
-import zio.json.EncoderOps
-import zio.json._ // for .fromJson/.toJson
-import zio.http.Body // for req.body.asString
 import java.sql.SQLException
-import javax.sql.DataSource
 
 object AppRoutes {
 
@@ -25,11 +16,12 @@ object AppRoutes {
   val routes: Routes[UserRepositoryDefault, Response] =
     // List of all the routes
     Routes(greetRoute)
-      .++(UserRoutes.userRoutes)
+      .++(UserRoutes.routes)
       // Handle all unhandled errors
-      .handleError {_ match
-        case e: SQLException => Response.internalServerError(e.getMessage)
-        case e => Response.internalServerError(s"DB error: $e.getMessage")
+      .handleError {
+        _ match
+          case e: SQLException => Response.internalServerError(e.getMessage)
+          case e => Response.internalServerError(s"DB error: $e.getMessage")
       }
 
   // A route that matches GET requests to /greet
