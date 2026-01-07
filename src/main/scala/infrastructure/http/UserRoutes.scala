@@ -3,32 +3,36 @@ package infrastructure.http
 
 import domain.model.User
 import infrastructure.db.repository.user.UserRepositoryDefault
-import zio.json._ // for .fromJson/.toJson
+
+import zio.json.*
 import zio.ZIO
-import zio.http.{Method, Request, Response, Routes, handler}
+import zio.http.{Method, Request, Response, Route, Routes, handler}
 
 object UserRoutes {
-  lazy val userRoutes: Routes[UserRepositoryDefault, Throwable] = // todo change to Database obj
-    Routes(
+  val routes: Routes[UserRepositoryDefault, Throwable] = Routes(users, createUser, updateUser)
+
+  lazy val users: Route[UserRepositoryDefault, Throwable] =// todo change to Database obj
       Method.GET / "users" -> handler {
         UserRepositoryDefault.get
           .map { users =>
             Response.text(users.toJson)
           }
-      },
-      Method.POST / "user" / "create" -> handler { (req: Request) =>
-        req.body.asString.flatMap { json =>
-          json.fromJson[User] match {
-            case Left(err) =>
-              // parsing failed: return 400
-              ZIO.succeed(Response.text(s"Invalid JSON: $err"))
-            case Right(user) =>
-              // parsing succeeded
-              UserRepositoryDefault.create(user)
-                .flatMap(count => ZIO.succeed(Response.text(s"Created user: ${user.toJson}")))
-          }
+      }
+  lazy val createUser: Route[UserRepositoryDefault, Throwable] =
+    Method.POST / "user" / "create" -> handler { (req: Request) =>
+      req.body.asString.flatMap { json =>
+        json.fromJson[User] match {
+          case Left(err) =>
+            // parsing failed: return 400
+            ZIO.succeed(Response.text(s"Invalid JSON: $err"))
+          case Right(user) =>
+            // parsing succeeded
+            UserRepositoryDefault.create(user)
+              .flatMap(count => ZIO.succeed(Response.text(s"Created user: ${user.toJson}")))
         }
-      },
+      }
+    }
+  lazy val updateUser: Route[UserRepositoryDefault, Throwable] =// todo change to Database obj
       Method.POST / "user" / "update" -> handler { (req: Request) =>
         req.body.asString.flatMap { json =>
           json.fromJson[User] match {
@@ -42,5 +46,4 @@ object UserRoutes {
           }
         }
       }
-    )
 }
