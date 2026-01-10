@@ -15,18 +15,23 @@ import zio.ZLayer
 
 // todo add parsing json tests
 object UserRoutesSpec extends ZIOSpecDefault {
-  val usersMock = List(User("1", "user1", List.empty))
+  def spec: Spec[Any, Throwable] = usersRouteTests + userCreateRouteTests
+
+  val testUser1 = User("1", "user1", List.empty)
+  val usersMock = List(testUser1)
+  val created = List(100)
   val userRepositoryMock: UserRepository = new UserRepository {
     override def get: ZIO[Any, Throwable, List[User]] = ZIO.succeed(usersMock)
 
-    override def create(user: User): ZIO[Any, Throwable, List[Long]] = ???
+    override def create(user: User): ZIO[Any, Throwable, List[Long]] = ZIO.succeed(List(100))
 
     override def update(user: User): ZIO[Any, Throwable, List[Long]] = ???
 
     override def delete(user: User): ZIO[Any, Throwable, User] = ???
   }
 
-  def spec: Spec[Any, Throwable] = suite("http/users")(
+
+  private val usersRouteTests = suite("http/users")(List(
     test("returns users list as json") {
       for {
         client <- ZIO.service[Client]
@@ -48,5 +53,24 @@ object UserRoutesSpec extends ZIOSpecDefault {
         usersBody <- usersResponse.body.asString
       } yield assertTrue(usersBody == usersMock.toJson)
     }.provide(TestClient.layer, ZLayer.succeed(userRepositoryMock))
-  )
+  ))
+
+
+  private val userCreateRouteTests = suite("http/user/create")(List(
+    test("returns users list as json") {
+      for {
+        client <- ZIO.service[Client]
+        _ <- TestClient.addRoutes[UserRepository] {
+          UserRoutes.createUser
+        }
+        createUserResponse <- client.batched(Request.post(
+          URL.root / "user" / "create",
+          Body.fromString(
+            testUser1.toJson
+          )
+        ))
+        createUserResponse <- createUserResponse.body.asString
+      } yield assertTrue(createUserResponse == "Created user: " + testUser1.toJson)
+    }.provide(TestClient.layer, ZLayer.succeed(userRepositoryMock))
+  ))
 }
