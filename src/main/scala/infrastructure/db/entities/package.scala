@@ -1,8 +1,10 @@
-package irka.grilleEncoder.infrastructure.db
+package irka.grilleEncoder
+package infrastructure.db
+
+import domain.model.{CardboardId, SquareId, UserId}
 
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
-import irka.grilleEncoder.domain.model.{CardboardId, SquareId, UserId}
 
 // DB entities (what maps to tables)
 package object entities {

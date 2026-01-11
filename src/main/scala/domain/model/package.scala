@@ -1,7 +1,8 @@
-package irka.grilleEncoder.domain
+package irka.grilleEncoder
+package domain
 
 package object model {
-  import zio.json.{JsonEncoder, JsonDecoder, DeriveJsonEncoder, DeriveJsonDecoder}
+  import zio.json.{DeriveJsonDecoder, DeriveJsonEncoder, JsonDecoder, JsonEncoder}
 
   final type UserId = String
   final type CardboardId = String
@@ -30,7 +31,7 @@ package object model {
 
   final case class Point(x: Int, y: Int) {
     def asInts: (Int, Int) = (x, y)
-  } // get from front
+  } // get from the front
 
   object Point {
     implicit val encoder: JsonEncoder[Point] = DeriveJsonEncoder.gen[Point]

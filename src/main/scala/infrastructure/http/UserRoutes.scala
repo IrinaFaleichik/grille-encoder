@@ -1,12 +1,13 @@
 package irka.grilleEncoder
 package infrastructure.http
 
+import domain.errors.InvalidJson
 import domain.model.User
-import infrastructure.db.repository.user.{UserRepository, UserRepositoryDefault}
+import infrastructure.db.repository.user.UserRepository
 
-import zio.json.*
 import zio.ZIO
-import zio.http.{Method, Request, Response, Route, Routes, handler}
+import zio.http.*
+import zio.json.*
 
 import java.sql.SQLException
 
@@ -20,7 +21,6 @@ object UserRoutes {
           Response.text(users.toJson)
         }
     }).handleError {
-    _ match
       case e: SQLException => Response.internalServerError(e.getMessage)
       case e => Response.internalServerError(s"DB error: $e.getMessage")
   }
@@ -31,7 +31,7 @@ object UserRoutes {
         json.fromJson[User] match {
           case Left(err) =>
             // parsing failed: return 400
-            ZIO.succeed(Response.text(s"Invalid JSON: $err"))
+            ZIO.fail(new InvalidJson(err))
           case Right(user) =>
             // parsing succeeded
             UserRepository.create(user)
@@ -39,26 +39,27 @@ object UserRoutes {
         }
       }
     }).handleError {
-    _ match
       case e: SQLException => Response.internalServerError(e.getMessage)
+      case e: InvalidJson => Response.text(e.getMessage).status(Status.BadRequest)
       case e => Response.internalServerError(s"DB error: $e.getMessage")
   }
-  lazy val updateUser: Route[UserRepository, Response] = (
-    Method.POST / "user" / "update" -> handler { (req: Request) =>
-      req.body.asString.flatMap { json =>
-        json.fromJson[User] match {
-          case Left(err) =>
-            // parsing failed: return 400
-            ZIO.succeed(Response.text(s"Invalid JSON: $err"))
-          case Right(user) =>
-            // parsing succeeded
-            UserRepository.update(user)
-              .flatMap(count => ZIO.succeed(Response.text(s"Updated user: ${user.toJson}")))
+
+  lazy val updateUser: Route[UserRepository, Response] = {
+    (
+      Method.POST / "user" / "update" -> handler { (req: Request) =>
+        req.body.asString.flatMap { json =>
+          json.fromJson[User] match {
+            case Left(err) => ZIO.fail(InvalidJson(err))
+            case Right(user) =>
+              // parsing succeeded
+              UserRepository.update(user)
+                .flatMap(count => ZIO.succeed(Response.text(s"Updated user: ${user.toJson}")))
+          }
         }
-      }
-    }).handleError {
-    _ match
-      case e: SQLException => Response.internalServerError(e.getMessage)
-      case e => Response.internalServerError(s"DB error: $e.getMessage")
+      }).handleError {
+        case e: SQLException => Response.internalServerError(e.getMessage)
+        case e: InvalidJson => Response.text(e.getMessage).status(Status.BadRequest)
+        case e => Response.internalServerError(s"DB error: $e.getMessage")
+    }
   }
 }
