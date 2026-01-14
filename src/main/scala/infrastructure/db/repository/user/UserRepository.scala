@@ -2,11 +2,8 @@ package irka.grilleEncoder
 package infrastructure.db.repository.user
 
 import domain.model.User
-import infrastructure.db.entities.{DBContext, TableEntity}
-
+import infrastructure.db.entities.TableEntity
 import zio.ZIO
-
-import java.sql.SQLException
 import scala.language.implicitConversions
 
 // shadows core.repository.UserRepository
@@ -22,7 +19,7 @@ trait UserRepository extends core.repository.UserRepository {
 
   def update(user: User): ZIO[Any, Throwable, List[Long]]
 
-  def delete(user: User): ZIO[Any, Throwable, User]
+  def delete(user: User): ZIO[Any, Throwable, List[Long]]
 }
 
 object UserRepository {
@@ -38,7 +35,7 @@ object UserRepository {
     ZIO.serviceWithZIO[UserRepository](_.update(user))
   }
 
-  def delete(user: User): ZIO[UserRepository, Throwable, User] = {
+  def delete(user: User): ZIO[UserRepository, Throwable, List[Long]] = {
     ZIO.serviceWithZIO[UserRepository](_.delete(user))
   }
 

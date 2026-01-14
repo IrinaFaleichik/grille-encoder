@@ -40,7 +40,14 @@ final class UserRepositoryDefault(ctx: DBContext) extends UserRepository {
     ctx.run(updateUser(List(toRow(user))))
   }
 
-  override def delete(user: User): ZIO[Any, SQLException, User] = ??? // todo return User or number of deleted Users + CHECK THE DELETE IN OBJECT
+  override def delete(user: User): ZIO[Any, SQLException, List[Long]] = {
+    // todo add case if user that we want to delete doesn't exist
+    def deleteUser(u: List[TableEntity.User]) = quote {
+      liftQuery(u).foreach(v => query[TableEntity.User].filter(_.id == v.id).delete)
+    }
+
+    ctx.run(deleteUser(List(toRow(user))))
+  }
 
 }
 

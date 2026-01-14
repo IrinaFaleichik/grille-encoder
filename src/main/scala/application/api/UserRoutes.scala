@@ -12,7 +12,7 @@ import zio.json.*
 import java.sql.SQLException
 
 object UserRoutes {
-  val routes: Routes[UserRepository, Response] = Routes(getUsers, createUser, updateUser)
+  val routes: Routes[UserRepository, Response] = Routes(getUsers, createUser, updateUser, deleteUser)
 
   lazy val getUsers: Route[UserRepository, Response] = (
     Method.GET / "users" -> handler {
@@ -27,9 +27,9 @@ object UserRoutes {
       req.body.asString
         .flatMap(parse)
         .flatMap { user =>
-            // parsing succeeded
-            UserRepository.create(user)
-              .map(count => Response.text(s"Created user: ${user.toJson}"))
+          // parsing succeeded
+          UserRepository.create(user)
+            .map(count => Response.text(s"Created user: ${user.toJson}"))
         }
     }).handleError(jsonParsingError + dbErrors + anyError)
 
@@ -39,36 +39,30 @@ object UserRoutes {
         req.body.asString
           .flatMap(parse)
           .flatMap { user =>
-              // parsing succeeded
-              UserRepository.update(user) //todo this as an argument
-                .map(count => Response.text(s"Updated user: ${user.toJson}"))
+            // parsing succeeded
+            UserRepository.update(user) //todo this as an argument?
+              .map(count => Response.text(s"Updated user: ${user.toJson}"))
           }
       }).handleError(jsonParsingError + dbErrors + anyError)
   }
 
-  // todo implement delete userRepository, then uncomment
-//  lazy val deleteUser: Route[UserRepository, Response] = {
-//    (
-//      Method.DELETE / "user" / "delete" -> handler { (req: Request) =>
-//        req.body.asString
-//          .flatMap(parse)
-//          .flatMap { user =>
-//              // parsing succeeded
-//              UserRepository.delete(user)
-//                .map(returnValue => Response.text(s"Deleted user: ${user.toJson}"))
-//        }
-//      }).handleError {
-//      case e: SQLException => Response.internalServerError(e.getMessage)
-//      case e: InvalidJson => Response.text(e.getMessage).status(Status.BadRequest)
-//      case e => Response.internalServerError(s"DB error: $e.getMessage")
-//    }
-//  }
+  lazy val deleteUser: Route[UserRepository, Response] = {
+    (
+      Method.POST / "user" / "delete" -> handler { (req: Request) =>
+        req.body.asString
+          .flatMap(parse)
+          .flatMap { user =>
+            UserRepository.delete(user)
+              .map(returnValue => Response.text(s"Deleted user: ${user.toJson}"))
+          }
+      }).handleError(jsonParsingError + dbErrors + anyError)
+  }
 
   private def parse(json: String): ZIO[Any, Throwable, User] =
     json.fromJson[User] match {
       case Left(err) => ZIO.fail(InvalidJson(err))
       case Right(user) => ZIO.succeed(user)
-  }
+    }
 
   private def dbErrors: PartialFunction[Throwable, Response] =
     case e: SQLException => Response.internalServerError(e.getMessage)

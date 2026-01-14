@@ -18,7 +18,7 @@ import java.sql.SQLException
 // todo add parsing json tests
 object UserRoutesExceptionsSpec extends ZIOSpecDefault {
   def spec: Spec[Any, Throwable] =
-    usersRouteTests + userCreateRouteTests + userUpdateRouteTests
+    usersRouteTests + userCreateRouteTests + userUpdateRouteTests + userDeleteRouteTests
 
   /* Mocks for tests */
   val invalidJsonErr: InvalidJson = new InvalidJson("(expected \'{\' got \'I\')")
@@ -27,6 +27,7 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
   val usersException = SQLException("Some DB error")
   val createdException = SQLException("Some DB error on create")
   val updatedException = SQLException("Some DB error on update")
+  val deletedException = SQLException("Some DB error on delete")
 
   val userRepositorySqlFailureMock: UserRepository = new UserRepository {
     override def get: ZIO[Any, Throwable, List[User]] = ZIO.fail(usersException)
@@ -35,18 +36,20 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
 
     override def update(user: User): ZIO[Any, Throwable, List[Long]] = ZIO.fail(updatedException)
 
-    override def delete(user: User): ZIO[Any, Throwable, User] = ???
+    override def delete(user: User): ZIO[Any, Throwable, List[Long]] = ZIO.fail(deletedException)
   }
 
-  private val usersRouteTests = suite("http/users")(
+  private val usersRouteTests = suite("http/users") {
+    val usersRoute = UserRoutes.getUsers
+    val usersRequestRoute = URL.root / "users"
     List(
       test("Db returns error: expect a valid error message and status InternalServerError") {
         for
           client <- ZIO.service[Client]
           _ <- TestClient.addRoutes[UserRepository] {
-            UserRoutes.getUsers
+            usersRoute
           }
-          usersResponse <- client.batched(Request.get(URL.root / "users"))
+          usersResponse <- client.batched(Request.get(usersRequestRoute))
           usersStatus = usersResponse.status
           usersBody <- usersResponse.body.asString
         yield assertTrue(
@@ -55,22 +58,24 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
         )
       }.provide(TestClient.layer, ZLayer.succeed(userRepositorySqlFailureMock))
     )
-  )
+  }
 
-  private val userCreateRouteTests = suite("http/user/create")(
+  private val userCreateRouteTests = suite("http/user/create") {
+    val createRoute = UserRoutes.createUser
+    val createRequestRoute = URL.root / "user" / "create"
     List(
       test("JSON invalid input: returns a valid error message and status BadRequest") {
         for
           client <- ZIO.service[Client]
           _ <- TestClient.addRoutes[UserRepository] {
-            UserRoutes.updateUser
+            createRoute
           }
-          updateUserResponse <- client.batched(Request.post(
-            URL.root / "user" / "update",
+          createUserResponse <- client.batched(Request.post(
+            createRequestRoute,
             Body.fromString("Invalid string")
           ))
-          resultStatus = updateUserResponse.status
-          resultBody <- updateUserResponse.body.asString
+          resultStatus = createUserResponse.status
+          resultBody <- createUserResponse.body.asString
         yield assertTrue(
           resultBody == invalidJsonErr.getMessage,
           resultStatus == BadRequest
@@ -81,10 +86,10 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
         for
           client <- ZIO.service[Client]
           _ <- TestClient.addRoutes[UserRepository] {
-            UserRoutes.createUser
+            createRoute
           }
           createUserResponse <- client.batched(Request.post(
-            URL.root / "user" / "create",
+            createRequestRoute,
             Body.fromString(testUser1.toJson)
           ))
           resultStatus = createUserResponse.status
@@ -95,18 +100,20 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
         )
       }
     ).map(_.provide(TestClient.layer, ZLayer.succeed(userRepositorySqlFailureMock)))
-  )
+  }
 
-  private val userUpdateRouteTests = suite("http/user/update")(
+  private val userUpdateRouteTests = suite("http/user/update") {
+    val updateRoute = UserRoutes.updateUser
+    val updateRequestRoute = URL.root / "user" / "update"
     List(
       test("JSON invalid input: returns a valid error message and status BadRequest") {
         for
           client <- ZIO.service[Client]
           _ <- TestClient.addRoutes[UserRepository] {
-            UserRoutes.updateUser
+            updateRoute
           }
           updateUserResponse <- client.batched(Request.post(
-            URL.root / "user" / "update",
+            updateRequestRoute,
             Body.fromString("Invalid string")
           ))
           resultStatus = updateUserResponse.status
@@ -120,10 +127,10 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
         for
           client <- ZIO.service[Client]
           _ <- TestClient.addRoutes[UserRepository] {
-            UserRoutes.updateUser
+            updateRoute
           }
           updateUserResponse <- client.batched(Request.post(
-            URL.root / "user" / "update",
+            updateRequestRoute,
             Body.fromString(testUser1.toJson)
           ))
           resultStatus = updateUserResponse.status
@@ -134,5 +141,44 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
         )
       }
     ).map(_.provide(TestClient.layer, ZLayer.succeed(userRepositorySqlFailureMock)))
-  )
+  }
+
+  private val userDeleteRouteTests = suite("http/user/delete") {
+    val deleteRoute = UserRoutes.deleteUser
+    val deleteRequestRoute = URL.root / "user" / "delete"
+    List(
+      test("JSON invalid input: returns a valid error message and status BadRequest") {
+        for
+          client <- ZIO.service[Client]
+          _ <- TestClient.addRoutes[UserRepository](deleteRoute)
+          deleteUserResponse <- client.batched(Request.post(
+            deleteRequestRoute,
+            Body.fromString("Invalid string")
+          ))
+          resultStatus = deleteUserResponse.status
+          resultBody <- deleteUserResponse.body.asString
+        yield assertTrue(
+          resultBody == invalidJsonErr.getMessage,
+          resultStatus == BadRequest
+        )
+      }
+      ,
+      test("Db returns error: expect a valid error message and status InternalServerError") {
+        for
+          client <- ZIO.service[Client]
+          _ <- TestClient.addRoutes[UserRepository](deleteRoute)
+          deleteUserResponse <- client.batched(Request.post(
+            deleteRequestRoute,
+            Body.fromString(testUser1.toJson)
+          ))
+          resultStatus = deleteUserResponse.status
+          resultBody <- deleteUserResponse.body.asString
+        yield assertTrue(
+          resultBody == deletedException.getMessage,
+          resultStatus == Status.InternalServerError
+        )
+      }
+    ).map(_.provide(TestClient.layer, ZLayer.succeed(userRepositorySqlFailureMock)))
+  }
+
 }
