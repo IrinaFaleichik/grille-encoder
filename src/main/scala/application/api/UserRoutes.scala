@@ -20,10 +20,7 @@ object UserRoutes {
         .map { users =>
           Response.text(users.toJson)
         }
-    }).handleError {
-      case e: SQLException => Response.internalServerError(e.getMessage)
-      case e => Response.internalServerError(s"DB error: $e.getMessage")
-  }
+    }).handleError(dbErrors + anyError)
 
   lazy val createUser: Route[UserRepository, Response] = (
     Method.POST / "user" / "create" -> handler { (req: Request) =>
@@ -34,11 +31,7 @@ object UserRoutes {
             UserRepository.create(user)
               .map(count => Response.text(s"Created user: ${user.toJson}"))
         }
-    }).handleError {
-      case e: SQLException => Response.internalServerError(e.getMessage)
-      case e: InvalidJson => Response.text(e.getMessage).status(Status.BadRequest)
-      case e => Response.internalServerError(s"DB error: $e.getMessage")
-  }
+    }).handleError(jsonParsingError + dbErrors + anyError)
 
   lazy val updateUser: Route[UserRepository, Response] = {
     (
@@ -47,14 +40,10 @@ object UserRoutes {
           .flatMap(parse)
           .flatMap { user =>
               // parsing succeeded
-              UserRepository.update(user)
+              UserRepository.update(user) //todo this as an argument
                 .map(count => Response.text(s"Updated user: ${user.toJson}"))
           }
-      }).handleError {
-        case e: SQLException => Response.internalServerError(e.getMessage)
-        case e: InvalidJson => Response.text(e.getMessage).status(Status.BadRequest)
-        case e => Response.internalServerError(s"DB error: $e.getMessage")
-    }
+      }).handleError(jsonParsingError + dbErrors + anyError)
   }
 
   // todo implement delete userRepository, then uncomment
@@ -81,8 +70,18 @@ object UserRoutes {
       case Right(user) => ZIO.succeed(user)
   }
 
-//  //todo rename
-//  def applyDbFunction(usr: User, userRep: User => ZIO[UserRepository, Throwable, List[Long]]) = {
-//    userRep(usr)
-//  }
+  private def dbErrors: PartialFunction[Throwable, Response] =
+    case e: SQLException => Response.internalServerError(e.getMessage)
+
+  private def jsonParsingError: PartialFunction[Throwable, Response] =
+    case e: InvalidJson => Response.text(e.getMessage).status(Status.BadRequest)
+
+  private def anyError: PartialFunction[Throwable, Response] =
+    e => Response.internalServerError(s"DB error: $e.getMessage")
+
+
+  extension (pf: PartialFunction[Throwable, Response]) {
+    def +(other: PartialFunction[Throwable, Response]): PartialFunction[Throwable, Response] =
+      pf.orElse(other)
+  }
 }
