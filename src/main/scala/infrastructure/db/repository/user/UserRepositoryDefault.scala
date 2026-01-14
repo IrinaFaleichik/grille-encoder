@@ -1,14 +1,13 @@
 package irka.grilleEncoder
 package infrastructure.db.repository.user
 
-import domain.model.{Cardboard, User}
+import domain.model.User
 import infrastructure.db.entities.{DBContext, TableEntity}
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill
-import irka.grilleEncoder.infrastructure.db.{DatabaseSQL, SQLiteDatabase}
 import zio.IsSubtypeOfError.impl
-import zio.{Task, ZIO, ZLayer}
+import zio.{ZIO, ZLayer}
 
 import java.sql.SQLException
 
@@ -29,6 +28,7 @@ final class UserRepositoryDefault(ctx: DBContext) extends UserRepository {
 
   override def get: ZIO[Any, SQLException, List[User]] = {
     def getRow: ZIO[Any, SQLException, List[TableEntity.User]] = ctx.run(query[TableEntity.User])
+
     getRow.map(_.map(toDomain))
   }
 
@@ -36,6 +36,7 @@ final class UserRepositoryDefault(ctx: DBContext) extends UserRepository {
     def updateUser(u: List[TableEntity.User]) = quote {
       liftQuery(u).foreach(v => query[TableEntity.User].updateValue(v))
     }
+
     ctx.run(updateUser(List(toRow(user))))
   }
 
@@ -45,21 +46,21 @@ final class UserRepositoryDefault(ctx: DBContext) extends UserRepository {
 
 object UserRepositoryDefault {
 
-  def create(user: User): ZIO[UserRepositoryDefault, SQLException, List[Long]] = {
-    ZIO.serviceWithZIO[UserRepositoryDefault](_.create(user))
-  }
-
-  def get: ZIO[UserRepositoryDefault, SQLException, List[User]] = {
-    ZIO.serviceWithZIO[UserRepositoryDefault](_.get)
-  }
-
-  def update(user: User): ZIO[UserRepositoryDefault, SQLException, List[Long]] = {
-    ZIO.serviceWithZIO[UserRepositoryDefault](_.update(user))
-  }
-
-  def delete(user: User): ZIO[UserRepositoryDefault, SQLException, User] = {
-    ZIO.serviceWithZIO[UserRepositoryDefault](_.delete(user))
-  }
+  //  def create(user: User): ZIO[UserRepositoryDefault, SQLException, List[Long]] = {
+  //    ZIO.serviceWithZIO[UserRepositoryDefault](_.create(user))
+  //  }
+  //
+  //  def get: ZIO[UserRepositoryDefault, SQLException, List[User]] = {
+  //    ZIO.serviceWithZIO[UserRepositoryDefault](_.get)
+  //  }
+  //
+  //  def update(user: User): ZIO[UserRepositoryDefault, SQLException, List[Long]] = {
+  //    ZIO.serviceWithZIO[UserRepositoryDefault](_.update(user))
+  //  }
+  //
+  //  def delete(user: User): ZIO[UserRepositoryDefault, SQLException, User] = {
+  //    ZIO.serviceWithZIO[UserRepositoryDefault](_.delete(user))
+  //  }
 
   lazy val live: ZLayer[DBContext, Nothing, UserRepositoryDefault] = ZLayer.fromFunction(new UserRepositoryDefault(_))
 }
