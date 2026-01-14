@@ -1,17 +1,17 @@
 package irka.grilleEncoder
-package infrastructure.http
+package infrastructure.application.api
 
-import infrastructure.db.repository.user.UserRepository
-import domain.model.User
+import application.api.UserRoutes
 import domain.errors.InvalidJson
-import zio.Scope
-import zio.test.*
+import domain.model.User
+import infrastructure.db.repository.user.UserRepository
+
+import zio.{Scope, ZIO, ZLayer}
 import zio.http.*
-import zio.json.*
-import zio.test.Assertion.*
-import zio.ZIO
-import zio.ZLayer
 import zio.http.Status.BadRequest
+import zio.json.*
+import zio.test.*
+import zio.test.Assertion.*
 
 object UserRoutesSuccessSpec extends ZIOSpecDefault {
   def spec: Spec[Any, Throwable] =

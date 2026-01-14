@@ -1,17 +1,15 @@
-package irka.grilleEncoder.infrastructure.http
+package irka.grilleEncoder
+package infrastructure.http
 
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
+import application.api.AppRoutes
 import zio.*
 import zio.http.*
-import irka.grilleEncoder.domain.model.*
-import irka.grilleEncoder.infrastructure
-import irka.grilleEncoder.infrastructure.db
-import irka.grilleEncoder.infrastructure.db.entities
-import irka.grilleEncoder.infrastructure.db.repository.user.UserRepositoryDefault
-import zio.json.EncoderOps
+import infrastructure.db
+import infrastructure.db.entities
+import infrastructure.db.repository.user.UserRepositoryDefault
 
-import java.sql.SQLException
 import javax.sql.DataSource
 
 object ExampleServer extends ZIOAppDefault {
@@ -22,7 +20,7 @@ object ExampleServer extends ZIOAppDefault {
   val appLayer: ZLayer[Any, Throwable, UserRepositoryDefault] = con >>> ctx >>> UserRepositoryDefault.live
 
   // Serving the routes using the default server layer on port 8080
-  def run = for {
+  def run: ZIO[Any, Throwable, Unit] = for {
     _ <- Server.serve(AppRoutes.routes).provide(Server.defaultWithPort(8083), appLayer)
   } yield ()
 }

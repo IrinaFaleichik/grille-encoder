@@ -1,16 +1,17 @@
 package irka.grilleEncoder
-package infrastructure.http
+package infrastructure.application.api
 
+import application.api.UserRoutes
 import domain.errors.InvalidJson
 import domain.model.User
 import infrastructure.db.repository.user.UserRepository
 
-import zio.{Scope, ZIO, ZLayer}
 import zio.http.*
 import zio.http.Status.BadRequest
 import zio.json.*
 import zio.test.*
 import zio.test.Assertion.*
+import zio.{Scope, ZIO, ZLayer}
 
 import java.sql.SQLException
 

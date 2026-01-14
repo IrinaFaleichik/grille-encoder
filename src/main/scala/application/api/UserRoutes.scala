@@ -1,5 +1,5 @@
 package irka.grilleEncoder
-package infrastructure.http
+package application.api
 
 import domain.errors.InvalidJson
 import domain.model.User

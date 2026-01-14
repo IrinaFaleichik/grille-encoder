@@ -1,9 +1,11 @@
-package irka.grilleEncoder.infrastructure.http
+package irka.grilleEncoder
+package application.api
 
+import infrastructure.db
+import infrastructure.db.repository.user.UserRepositoryDefault
 import zio.*
 import zio.http.*
-import irka.grilleEncoder.infrastructure.db
-import irka.grilleEncoder.infrastructure.db.repository.user.UserRepositoryDefault
+
 import java.sql.SQLException
 
 object AppRoutes {
@@ -19,9 +21,8 @@ object AppRoutes {
       .++(UserRoutes.routes)
       // Handle all unhandled errors
       .handleError {
-        _ match
-          case e: SQLException => Response.internalServerError(e.getMessage)
-          case e => Response.internalServerError(s"DB error: $e.getMessage")
+        case e: SQLException => Response.internalServerError(e.getMessage)
+        case e => Response.internalServerError(s"DB error: $e.getMessage")
       }
 
   // A route that matches GET requests to /greet
