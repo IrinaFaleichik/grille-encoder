@@ -15,14 +15,13 @@ import zio.{Scope, ZIO, ZLayer}
 
 import java.sql.SQLException
 
-// todo add parsing json tests
 object UserRoutesExceptionsSpec extends ZIOSpecDefault {
   def spec: Spec[Any, Throwable] =
     usersRouteTests + userCreateRouteTests + userUpdateRouteTests + userDeleteRouteTests
 
   /* Mocks for tests */
   val invalidJsonErr: InvalidJson = new InvalidJson("(expected \'{\' got \'I\')")
-  val testUser1 = User("1", "user1", List.empty)
+  val testUser1 = User("1", "user1")
   val usersMock = List(testUser1)
   val usersException = SQLException("Some DB error")
   val createdException = SQLException("Some DB error on create")

@@ -19,7 +19,7 @@ object UserRoutesSuccessSpec extends ZIOSpecDefault {
 
   /* Mocks for tests */
   val invalidJsonErr: InvalidJson = new InvalidJson("(expected \'{\' got \'I\')")
-  val testUser1 = User("1", "user1", List.empty)
+  val testUser1 = User("1", "user1")
   val usersMock = List(testUser1)
   val created = List(100L)
   val updated = List(10L)

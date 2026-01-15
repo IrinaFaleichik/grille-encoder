@@ -11,7 +11,7 @@ trait UserRepository extends core.repository.UserRepository {
 
   def toRow(user: User): TableEntity.User = TableEntity.User(user.id, user.name)
 
-  def toDomain(user: TableEntity.User): User = User(user.id, user.name, Nil)
+  def toDomain(user: TableEntity.User): User = User(user.id, user.name)
 
   def create(user: User): ZIO[Any, Throwable, List[Long]]
 
