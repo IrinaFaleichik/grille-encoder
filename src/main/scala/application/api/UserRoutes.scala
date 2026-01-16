@@ -4,7 +4,6 @@ package application.api
 import domain.errors.InvalidJson
 import domain.model.User
 import infrastructure.db.repository.user.UserRepository
-
 import zio.ZIO
 import zio.http.*
 import zio.json.*
@@ -40,7 +39,7 @@ object UserRoutes {
           .flatMap(parse)
           .flatMap { user =>
             // parsing succeeded
-            UserRepository.update(user) //todo this as an argument?
+            UserRepository.update(user)
               .map(count => Response.text(s"Updated user: ${user.toJson}"))
           }
       }).handleError(jsonParsingError + dbErrors + anyError)
