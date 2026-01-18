@@ -6,14 +6,8 @@ import infrastructure.db.repository.user.UserRepositoryDefault
 import zio.*
 import zio.http.*
 
-import java.sql.SQLException
-
 object AppRoutes {
 
-
-  // The Routes that don't require any service from the ZIO environment,
-  // so the first type parameter is Any.
-  // All the errors are handled by turning them into a Response.
   //todo implement authentification, basic and through cookie
   val routes: Routes[UserRepositoryDefault, Response] =
     // List of all the routes
@@ -32,6 +26,6 @@ object AppRoutes {
       handler { (req: Request) =>
         val name = req.queryOrElse[String]("name", "World")
         Response.text(s"Hello $name!")
-      }).handleError(e => Response.internalServerError(s"Internal server error"))
+      }).handleError(e => Response.internalServerError(e))
 
 }
