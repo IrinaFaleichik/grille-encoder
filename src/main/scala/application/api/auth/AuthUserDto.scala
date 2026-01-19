@@ -2,23 +2,13 @@ package irka.grilleEncoder
 package application.api.auth
 
 import domain.model.UserId
-import zio.Config.Secret
 import zio.json.{DeriveJsonDecoder, DeriveJsonEncoder, JsonDecoder, JsonEncoder}
-import SecretCodecs._
 
-case class AuthUser(id: UserId, username: String, password: Secret, email: Option[String] = None, role: Role = Role.User)
+case class AuthUser(id: UserId, username: String, password: PasswordHash, email: Option[String] = None, role: Role = Role.User)
 
 object AuthUser:
   implicit val encoder: JsonEncoder[AuthUser] = DeriveJsonEncoder.gen[AuthUser]
   implicit val decoder: JsonDecoder[AuthUser] = DeriveJsonDecoder.gen[AuthUser]
-
-object SecretCodecs:
-  // todo make hash function for password
-  // Encoder for Secret - converts Secret to a String
-  implicit val secretEncoder: JsonEncoder[Secret] = JsonEncoder.string.contramap(_.stringValue)
-
-  // Decoder for Secret - creates Secret from a String
-  implicit val secretDecoder: JsonDecoder[Secret] = JsonDecoder.string.map(Secret(_))
 
 enum Role:
   case User, Admin
