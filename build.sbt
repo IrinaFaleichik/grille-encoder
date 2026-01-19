@@ -19,6 +19,13 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
+  // ZIO Logging with SLF4j integration
+  "dev.zio" %% "zio-logging-slf4j" % "2.5.2",
+  "dev.zio" %% "zio-logging-slf4j2" % "2.5.2",
+  "ch.qos.logback" % "logback-classic" % "1.5.13"
+)
+
+libraryDependencies ++= Seq(
   "dev.zio" %% "zio-test" % "2.1.23" % Test,
   "dev.zio" %% "zio-test-sbt" % "2.1.23" % Test,
   "dev.zio" %% "zio-http-testkit" % "3.3.3" % Test
