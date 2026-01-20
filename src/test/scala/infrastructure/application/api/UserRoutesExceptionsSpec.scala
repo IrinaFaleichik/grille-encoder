@@ -4,7 +4,7 @@ package infrastructure.application.api
 import application.api.UserRoutes
 import domain.errors.InvalidJson
 import domain.model.User
-import infrastructure.db.repository.user.UserRepository
+import core.repository.UserRepository
 
 import zio.http.*
 import zio.http.Status.BadRequest

@@ -2,16 +2,39 @@ package irka.grilleEncoder
 package core.repository
 
 import domain.model.User
-import zio.*
+import infrastructure.db.entities.TableEntity
 
-trait UserRepository {
-  def create(user: User): Task[List[Long]]
+import zio.ZIO
 
-  //  def findById(user: User): Task[Option[User]]
+import scala.language.implicitConversions
 
-  def get: Task[List[User]]
+trait UserRepository:
 
-  def update(user: User): Task[List[Long]]
+  /** conversions between DB and Domain entities */
+  def toRow(user: User): TableEntity.User = TableEntity.User(user.id, user.name)
 
-  def delete(user: User): Task[List[Long]]
-}
+  def toDomain(user: TableEntity.User): User = User(user.id, user.name)
+
+  /** DB operations */
+  def create(user: User): ZIO[Any, Throwable, List[Long]]
+
+  def get: ZIO[Any, Throwable, List[User]]
+
+  def update(user: User): ZIO[Any, Throwable, List[Long]]
+
+  def delete(user: User): ZIO[Any, Throwable, List[Long]]
+
+
+object UserRepository:
+  def create(user: User): ZIO[UserRepository, Throwable, List[Long]] =
+    ZIO.serviceWithZIO[UserRepository](_.create(user))
+
+  def get: ZIO[UserRepository, Throwable, List[User]] =
+    ZIO.serviceWithZIO[UserRepository](_.get)
+
+  def update(user: User): ZIO[UserRepository, Throwable, List[Long]] =
+    ZIO.serviceWithZIO[UserRepository](_.update(user))
+
+  def delete(user: User): ZIO[UserRepository, Throwable, List[Long]] =
+    ZIO.serviceWithZIO[UserRepository](_.delete(user))
+
