@@ -22,13 +22,6 @@ object Role:
     case "Admin" => Role.Admin
     case "User" => Role.User
 
-case class AuthRequest(username: String, password: String)
-
-object AuthRequest:
-  implicit val encoder: JsonEncoder[AuthRequest] = DeriveJsonEncoder.gen[AuthRequest]
-  implicit val decoder: JsonDecoder[AuthRequest] = DeriveJsonDecoder.gen[AuthRequest]
-
-
 // Response DTO with auth info
 case class AuthUserDto(id: UserId, username: String, email: Option[String], role: Role)
 
