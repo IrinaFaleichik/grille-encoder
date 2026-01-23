@@ -64,14 +64,4 @@ object UserRoutes {
   private def dbErrors: PartialFunction[Throwable, Response] =
     case e: SQLException => Response.internalServerError(e.getMessage)
 
-  private def jsonParsingError: PartialFunction[Throwable, Response] =
-    case e: InvalidJson => Response.text(e.getMessage).status(Status.BadRequest)
-
-  private def anyError: PartialFunction[Throwable, Response] =
-    e => Response.internalServerError(s"DB error: $e.getMessage")
-
-
-  extension (pf: PartialFunction[Throwable, Response])
-    def +(other: PartialFunction[Throwable, Response]): PartialFunction[Throwable, Response] =
-      pf.orElse(other)
 }
