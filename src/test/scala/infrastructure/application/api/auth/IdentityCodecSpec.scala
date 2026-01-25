@@ -2,10 +2,12 @@ package irka.grilleEncoder
 package infrastructure.application.api.auth
 
 import zio.test.{Spec, ZIOSpecDefault}
-import application.api.auth._
-import zio.json._
-import zio.test._
-import zio.test.Assertion._
+import application.api.auth.*
+
+import application.api.auth.identity.{EmailIdentity, UsernameIdentity}
+import zio.json.*
+import zio.test.*
+import zio.test.Assertion.*
 
 object IdentityCodecSpec extends ZIOSpecDefault:
   def spec: Spec[Any, Nothing] = suite("JSON serialization")(

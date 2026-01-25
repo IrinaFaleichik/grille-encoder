@@ -3,7 +3,7 @@ package infrastructure.application.api
 
 import application.api.UserRoutes
 import domain.errors.InvalidJson
-import domain.model.User
+import domain.model.{User, UserId}
 import core.repository.UserRepository
 
 import zio.http.*
@@ -21,6 +21,7 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
 
   /* Mocks for tests */
   val invalidJsonErr: InvalidJson = new InvalidJson("(expected \'{\' got \'I\')")
+  val invalidJsonErrDeleteUser: InvalidJson = new InvalidJson("(expected \'\"\' got \'I\')")
   val testUser1 = User("1", "user1")
   val usersMock = List(testUser1)
   val usersException = SQLException("Some DB error")
@@ -35,7 +36,7 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
 
     override def update(user: User): ZIO[Any, Throwable, List[Long]] = ZIO.fail(updatedException)
 
-    override def delete(user: User): ZIO[Any, Throwable, List[Long]] = ZIO.fail(deletedException)
+    override def delete(userid: UserId): ZIO[Any, Throwable, List[Long]] = ZIO.fail(deletedException)
   }
 
   private val usersRouteTests = suite("http/users") {
@@ -157,7 +158,7 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
           resultStatus = deleteUserResponse.status
           resultBody <- deleteUserResponse.body.asString
         yield assertTrue(
-          resultBody == invalidJsonErr.getMessage,
+          resultBody == invalidJsonErrDeleteUser.getMessage,
           resultStatus == BadRequest
         )
       }
@@ -168,7 +169,7 @@ object UserRoutesExceptionsSpec extends ZIOSpecDefault {
           _ <- TestClient.addRoutes[UserRepository](deleteRoute)
           deleteUserResponse <- client.batched(Request.post(
             deleteRequestRoute,
-            Body.fromString(testUser1.toJson)
+            Body.fromString(testUser1.id.toJson)
           ))
           resultStatus = deleteUserResponse.status
           resultBody <- deleteUserResponse.body.asString

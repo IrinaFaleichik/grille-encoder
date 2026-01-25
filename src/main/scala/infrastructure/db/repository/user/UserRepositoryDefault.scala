@@ -1,12 +1,13 @@
 package irka.grilleEncoder
 package infrastructure.db.repository.user
 
-import domain.model.User
+import domain.model.{User, UserId}
 import infrastructure.db.entities.{DBContext, TableEntity}
 
 import io.getquill.*
 import io.getquill.jdbczio.Quill
 import core.repository.UserRepository
+
 import zio.IsSubtypeOfError.impl
 import zio.{ZIO, ZLayer}
 
@@ -43,19 +44,18 @@ final class UserRepositoryDefault(ctx: DBContext) extends UserRepository:
       result <- ctx.run(updateUser(List(toRow(user))))
     yield result
 
-  override def delete(user: User): ZIO[Any, SQLException, List[Long]] = {
-    def deleteUser(u: List[TableEntity.User]) = quote:
-      liftQuery(u).foreach(v => query[TableEntity.User].filter(_.id == v.id).delete)
+  override def delete(userId: UserId): ZIO[Any, SQLException, List[Long]] = {
+    def deleteUser(u: List[UserId]) = quote:
+      liftQuery(u).foreach(id => query[TableEntity.User].filter(_.id == id).delete)
 
     for
-      _ <- ZIO.logInfo(s"Deleting user: ${user.name}")
-      result: List[Long] <- ctx.run(deleteUser(List(toRow(user))))
+      _ <- ZIO.logInfo(s"Deleting user: $userId")
+      result: List[Long] <- ctx.run(deleteUser(List(userId)))
     yield result
   }.flatMap: result =>
     if result.isEmpty || result.head == 0
-    then ZIO.fail(new SQLException(s"Couldn't delete user: $user is not found"))
+    then ZIO.fail(new SQLException(s"Couldn't delete user: $userId is not found"))
     else ZIO.succeed(result)
-
 
 object UserRepositoryDefault:
 

@@ -2,16 +2,15 @@ package irka.grilleEncoder
 package application.api
 
 import domain.errors.InvalidJson
-import domain.model.User
+import domain.model.{User, UserId}
 import core.repository.UserRepository
+import infrastructure.logging.LoggingExtensions.*
 
-import infrastructure.logging.LoggingExtensions._
 import zio.ZIO
 import zio.http.*
 import zio.json.*
 
-import java.sql.SQLException
-
+//todo rename, it is not a User, it's more a UserDB CRUD methods API
 object UserRoutes {
   val routes: Routes[UserRepository, Response] = Routes(getUsers, createUser, updateUser, deleteUser)
 
@@ -48,10 +47,10 @@ object UserRoutes {
       for
         _ <- ZIO.logInfo("Requested route delete user")
         result <- req.body.asString
-          .flatMap(parse)
-          .flatMap: user =>
-            UserRepository.delete(user)
-              .map(returnValue => Response.text(s"Deleted user: ${user.toJson}"))
+          .flatMap(parseId)
+          .flatMap: userId =>
+            UserRepository.delete(userId)
+              .map(returnValue => Response.text(s"Deleted user: ${userId.toJson}"))
           .logErrorWithoutTrace(_.getMessage)
       yield result
     ).handleError(jsonParsingError + dbErrors + anyError)
@@ -61,7 +60,9 @@ object UserRoutes {
       case Left(err) => ZIO.fail(InvalidJson(err))
       case Right(user) => ZIO.succeed(user)
 
-  private def dbErrors: PartialFunction[Throwable, Response] =
-    case e: SQLException => Response.internalServerError(e.getMessage)
+  private def parseId(json: String): ZIO[Any, Throwable, UserId] =
+    json.fromJson[UserId] match
+      case Left(err) => ZIO.fail(InvalidJson(err))
+      case Right(userId) => ZIO.succeed(userId)
 
 }

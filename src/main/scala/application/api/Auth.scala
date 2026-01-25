@@ -1,11 +1,12 @@
 package irka.grilleEncoder
 package application.api
 
-import application.api.auth.{AuthService, AuthUser, AuthUserDto, Identity}
+import application.api.auth.{AuthService, AuthUser, AuthUserDto}
+import application.api.auth.identity.Identity
 
 import zio.Config.Secret
 
-class Auth:
+object Auth:
 
   import zio._
   import zio.http._
@@ -19,7 +20,7 @@ class Auth:
             for
               _ <- ZIO.logInfo(s"Authenticating user: $emailOrUsername")
               authResult <- ZIO.fromEither(
-                  Identity.validate(emailOrUsername, password.toString())
+                  Identity.fromCredential(emailOrUsername, password.toString())
                 )
                 .flatMap(identity => authService.authenticate(identity))
                 .mapError(errorMsg => Response

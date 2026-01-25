@@ -1,7 +1,7 @@
 package irka.grilleEncoder
 package core.repository
 
-import domain.model.User
+import domain.model.{User, UserId}
 import infrastructure.db.entities.TableEntity
 
 import zio.ZIO
@@ -22,7 +22,7 @@ trait UserRepository:
 
   def update(user: User): ZIO[Any, Throwable, List[Long]]
 
-  def delete(user: User): ZIO[Any, Throwable, List[Long]]
+  def delete(user: UserId): ZIO[Any, Throwable, List[Long]]
 
 
 object UserRepository:
@@ -35,6 +35,6 @@ object UserRepository:
   def update(user: User): ZIO[UserRepository, Throwable, List[Long]] =
     ZIO.serviceWithZIO[UserRepository](_.update(user))
 
-  def delete(user: User): ZIO[UserRepository, Throwable, List[Long]] =
+  def delete(user: UserId): ZIO[UserRepository, Throwable, List[Long]] =
     ZIO.serviceWithZIO[UserRepository](_.delete(user))
 

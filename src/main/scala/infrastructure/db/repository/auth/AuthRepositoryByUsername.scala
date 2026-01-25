@@ -2,13 +2,14 @@ package irka.grilleEncoder
 package infrastructure.db.repository.auth
 
 import domain.model.UserId
-import application.api.auth.{AuthUserDto, Identity, PasswordHash, UsernameIdentity}
+import application.api.auth.{AuthUserDto, PasswordHash}
 import infrastructure.db.entities.DBContext
 
 import zio.{ZIO, ZLayer}
 import io.getquill.*
 import infrastructure.db.entities.TableEntity
 import core.repository.AuthRepository
+import application.api.auth.identity.{Identity, UsernameIdentity}
 
 import java.sql.SQLException
 
@@ -25,7 +26,9 @@ final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[User
     for
       userOpt <- ctx.run(
         quote:
-          query[TableEntity.AuthUser].filter(u => u.username == lift(identity.username))
+          query[TableEntity.AuthUser].filter(
+            u => u.username == lift(identity.username)
+          )
       ).map(_.headOption)
       user <- userOpt match
         case Some(record) if verifyPassword(record.passwordHash, hashPassword(identity.password)) =>
@@ -38,7 +41,11 @@ final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[User
 
   override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
 
-  override def create(username: UserId, password: String, email: Option[UserId]): ZIO[Any, Throwable, AuthUserDto] = ???
+  override def create(identity: Identity): ZIO[Any, Throwable, AuthUserDto] = ???
+  // todo 1) go to db, 2) check if user exists
+  //  3) if user exists, give an error or redirect to login
+  //  4) ) if user doesn't exist, create user and return user
+
 }
 
 object AuthRepositoryByUsername {

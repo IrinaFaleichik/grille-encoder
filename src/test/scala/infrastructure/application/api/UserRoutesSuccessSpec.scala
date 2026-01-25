@@ -3,7 +3,7 @@ package infrastructure.application.api
 
 import application.api.UserRoutes
 import domain.errors.InvalidJson
-import domain.model.User
+import domain.model.{User, UserId}
 import core.repository.UserRepository
 
 import zio.{Scope, ZIO, ZLayer}
@@ -15,10 +15,11 @@ import zio.test.Assertion.*
 
 object UserRoutesSuccessSpec extends ZIOSpecDefault {
   def spec: Spec[Any, Throwable] =
-    usersRouteTests + userCreateRouteTests + userUpdateRouteTests
+    usersRouteTests + userCreateRouteTests + userUpdateRouteTests + userDeleteRouteTests
 
   /* Mocks for tests */
   val invalidJsonErr: InvalidJson = new InvalidJson("(expected \'{\' got \'I\')")
+  val invalidJsonErrDeleteUser: InvalidJson = new InvalidJson("(expected \'\"\' got \'I\')")
   val testUser1 = User("1", "user1")
   val usersMock = List(testUser1)
   val created = List(100L)
@@ -26,7 +27,7 @@ object UserRoutesSuccessSpec extends ZIOSpecDefault {
   val deleted = List(1L)
   val createdSuccess: String = "Created user: " + testUser1.toJson
   val updatedSuccess: String = "Updated user: " + testUser1.toJson
-  val deletedSuccess: String = "Deleted user: " + testUser1.toJson
+  val deletedSuccess: String = "Deleted user: " + testUser1.id.toJson
 
   val userRepositorySuccessMock: UserRepository = new UserRepository {
     override def get: ZIO[Any, Throwable, List[User]] = ZIO.succeed(usersMock)
@@ -35,7 +36,7 @@ object UserRoutesSuccessSpec extends ZIOSpecDefault {
 
     override def update(user: User): ZIO[Any, Throwable, List[Long]] = ZIO.succeed(updated)
 
-    override def delete(user: User): ZIO[Any, Throwable, List[Long]] = ZIO.succeed(deleted)
+    override def delete(userid: UserId): ZIO[Any, Throwable, List[Long]] = ZIO.succeed(deleted)
   }
 
   private val usersRouteTests = suite("http/users")(
@@ -141,7 +142,7 @@ object UserRoutesSuccessSpec extends ZIOSpecDefault {
           }
           deleteUserResponse <- client.batched(Request.post(
             deleteRequestRoute,
-            Body.fromString(testUser1.toJson)
+            Body.fromString(testUser1.id.toJson)
           ))
           deleteUserResponse <- deleteUserResponse.body.asString
         yield assertTrue(deleteUserResponse == deletedSuccess)
@@ -160,7 +161,7 @@ object UserRoutesSuccessSpec extends ZIOSpecDefault {
           resultStatus = deleteUserResponse.status
           resultBody <- deleteUserResponse.body.asString
         yield assertTrue(
-          resultBody == invalidJsonErr.getMessage,
+          resultBody == invalidJsonErrDeleteUser.getMessage,
           resultStatus == BadRequest
         )
       }
