@@ -18,21 +18,20 @@ object AuthRoutes:
 
   lazy val login: Route[AuthService, Response] = (
     Method.POST / "account" / "login" -> handler: (request: Request) =>
-      request.body.asString
-        .flatMap(parseCredentials)
+      parseCredentials(request)
         .flatMap(AuthService.authenticate)
-        .map: _ =>
-          Response.text("Login succeed! Enjoy your stay!")
+        .map: user =>
+          Response.text(s"Login succeed! Enjoy your stay, ${user.username}!")
         .logErrorWithoutTrace(_.getMessage)
     ).handleError(jsonParsingError + dbErrors + anyError)
 
   lazy val signUp: Route[AuthService, Response] = (
     Method.POST / "account" / "signup" -> handler: (request: Request) =>
-      request.body.asString
-        .flatMap(parseCredentials)
+      parseCredentials(request)
         .flatMap(AuthService.create)
-        .map: _ =>
-          Response.text("Welcome, ")
-        //todo redirect to greet or settings route
+        .map: user =>
+          Response.text(s"Welcome, ${user.username}!")
+        // todo redirect to /profile/me
+        //        .map(_ => Response.redirect("/profile/me"))
         .logErrorWithoutTrace(_.getMessage)
     ).handleError(anyError)

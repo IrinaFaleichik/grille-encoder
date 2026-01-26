@@ -4,11 +4,10 @@ package application
 import domain.errors.InvalidJson
 import application.api.auth.identity.{EmailIdentity, Identity, UsernameIdentity}
 import application.api.auth.identity.*
-import application.api.auth.identity.Identity.*
 
 import zio.ZIO
-import zio.http.{Response, Status}
-import zio.json.DecoderOps
+import zio.http.{Request, Response, Status}
+import zio.json.{DecoderOps, JsonDecoder}
 
 import java.sql.SQLException
 
@@ -23,12 +22,18 @@ package object api:
     def +(other: PartialFunction[Throwable, Response]): PartialFunction[Throwable, Response] =
       pf.orElse(other)
 
-  def parseCredentials(json: String): ZIO[Any, Throwable, Identity] =
-    json.fromJson[EmailIdentity] match
-      case Left(err) => json.fromJson[UsernameIdentity] match
-        case Left(err) => ZIO.fail(InvalidJson(err))
-        case Right(identity) => ZIO.succeed(identity)
-      case Right(identity) => ZIO.succeed(identity)
+  private[api] def parseCredentials(request: Request): ZIO[Any, Throwable, Identity] =
+    parseRequestBody[EmailIdentity](request).orElse:
+      parseRequestBody[UsernameIdentity](request)
 
   private def dbErrors: PartialFunction[Throwable, Response] =
     case e: SQLException => Response.internalServerError(e.getMessage)
+
+  private[api] def parseRequestBody[DecodedType: JsonDecoder]
+  (request: Request): ZIO[Any, Throwable, DecodedType] =
+    request.body.asString
+      .flatMap(json =>
+        json.fromJson[DecodedType] match
+          case Left(err) => ZIO.fail(InvalidJson(err))
+          case Right(resultType) => ZIO.succeed(resultType)
+      )

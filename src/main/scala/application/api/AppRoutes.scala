@@ -14,15 +14,12 @@ object AppRoutes {
 
   //todo implement authentification, basic and through cookie
   val routes: Routes[UserRepositoryDefault & AuthService, Response] =
-    // List of all the routes
-    greetRoute ++ UserRoutes.routes
-  // Handle all unhandled errors
+    greetRoute ++ test ++ UserRoutes.routes
 
-  // A route that matches GET requests to /greet
-  // It doesn't require any service from the ZIO environment
-  // so the first type parameter is Any
-  // All its errors are handled so the second type parameter is Nothing
-  //todo add test route? and delete this route
+  private lazy val test: Routes[AuthService, Response] = Routes(
+    Method.GET / "test" -> handler:
+      Response.text("Welcome to my service!") // todo add sandbox middleware
+  )
 
   lazy val greetRoute: Routes[AuthService, Response] = Routes(
     Method.POST / "account" / "me" -> handler: (_: Request) =>
