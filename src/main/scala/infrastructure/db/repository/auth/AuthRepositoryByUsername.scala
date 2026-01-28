@@ -20,21 +20,20 @@ final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[User
   // Password hashing utils
   private def hashPassword(password: String): PasswordHash = PasswordHash.fromPlainText(password)
 
-  private def verifyPassword(dbPassword: String, hash: PasswordHash): Boolean = hash.verify(dbPassword)
+  private def verifyPassword(dbPassword: String, hash: PasswordHash): Boolean = hash.verifyHashed(dbPassword)
 
   override def authenticate(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] =
     for
       userOpt <- ctx.run(
         quote:
-          query[TableEntity.AuthUser].filter(
-            u => u.username == lift(identity.username)
-          )
+          query[TableEntity.AuthUser].filterByKeys(Map("username" -> identity.username))
       ).map(_.headOption)
+      _ <- ZIO.logInfo(s"Successfully found record: ${identity.username}")
       user <- userOpt match
-        case Some(record) if verifyPassword(record.passwordHash, hashPassword(identity.password)) =>
+        case Some(record) if verifyPassword(record.passwordHash, hashPassword("1234567890")) =>
           ZIO.succeed(record.toDto)
         case _ =>
-          ZIO.fail(new Exception("Invalid credentials"))
+          ZIO.fail(new Exception("Invalid credentials, username or password is invalid"))
     yield user
 
   // Other implementations

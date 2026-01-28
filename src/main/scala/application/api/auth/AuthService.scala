@@ -37,8 +37,8 @@ object AuthService:
                                          ) extends AuthService:
     override def authenticate(identity: Identity): ZIO[Any, Throwable, AuthUserDto] =
       identity match
-        case i: UsernameIdentity => usernameRepo.authenticate(i)
         case i: EmailIdentity => ZIO.fail(new Exception("Email authentication is not implemented yet"))
+        case i: UsernameIdentity => usernameRepo.authenticate(i)
 
     override def create(identity: Identity): ZIO[Any, Throwable, AuthUserDto] = ???
 

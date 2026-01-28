@@ -9,12 +9,15 @@ import java.util.Base64
 import scala.annotation.tailrec
 
 case class PasswordHash private(private val hash: String):
-  override def toString: String = "Password(***)"
+  //  override def toString: String = "Password(***)"
 
   def verify(plainPassword: String): Boolean =
     // For the simple SHA-256 implementation:
     val inputHash = fromPlainText(plainPassword)
     inputHash.hash == hash
+
+  def verifyHashed(hashedPassword: String): Boolean =
+    hashedPassword == this.hash
 
 object PasswordHash:
   private val salt = "my cool salt"

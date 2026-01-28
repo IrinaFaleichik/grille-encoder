@@ -15,7 +15,7 @@ package object api:
   def anyError: PartialFunction[Throwable, Response] =
     e => Response.internalServerError(s"DB error: $e.getMessage")
 
-  def jsonParsingError: PartialFunction[Throwable, Response] =
+  def jsonParsingError(expectedJson: String): PartialFunction[Throwable, Response] =
     case e: InvalidJson => Response.text(e.getMessage).status(Status.BadRequest)
 
   extension (pf: PartialFunction[Throwable, Response])
@@ -34,6 +34,6 @@ package object api:
     request.body.asString
       .flatMap(json =>
         json.fromJson[DecodedType] match
-          case Left(err) => ZIO.fail(InvalidJson(err))
+          case Left(err) => ZIO.fail(InvalidJson("some format")(err))
           case Right(resultType) => ZIO.succeed(resultType)
       )

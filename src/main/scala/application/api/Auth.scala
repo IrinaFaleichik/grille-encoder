@@ -23,7 +23,7 @@ object Auth:
           for
             _ <- ZIO.logInfo(s"Authenticating user: $emailOrUsername")
             authResult <- ZIO.fromEither(
-                Identity.fromCredential(emailOrUsername, password.toString())
+                Identity.fromCredential(emailOrUsername, password.stringValue)
               )
               .flatMap(identity => authenticate(identity))
               .mapError(errorMsg => Response

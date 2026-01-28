@@ -14,7 +14,7 @@ object AppRoutes {
 
   //todo implement authentification, basic and through cookie
   val routes: Routes[UserRepositoryDefault & AuthService, Response] =
-    greetRoute ++ test ++ UserRoutes.routes
+    greetRoute ++ test ++ UserRoutes.routes ++ AdminRoutes.routes
 
   private lazy val test: Routes[AuthService, Response] = Routes(
     Method.GET / "test" -> handler:

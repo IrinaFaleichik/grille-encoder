@@ -2,16 +2,13 @@ package irka.grilleEncoder
 package application.api
 
 import application.api.*
-import application.api.auth.{AuthService, AuthUserDto}
-import core.repository.{AuthRepository, UserRepository}
-import domain.errors.InvalidJson
-import infrastructure.db.repository.auth.AuthRepositoryByUsername
+import application.api.auth.AuthService
 import infrastructure.logging.LoggingExtensions.logErrorWithoutTrace
-import application.api.auth.identity.{EmailIdentity, Identity, UsernameIdentity}
+import application.api.auth.identity.Identity
 
-import zio.ZIO
+import domain.model.User
 import zio.http.*
-import zio.json.DecoderOps
+import zio.json.EncoderOps
 
 object AuthRoutes:
   val routes: Routes[AuthService, Response] = Routes(login)
@@ -23,7 +20,7 @@ object AuthRoutes:
         .map: user =>
           Response.text(s"Login succeed! Enjoy your stay, ${user.username}!")
         .logErrorWithoutTrace(_.getMessage)
-    ).handleError(jsonParsingError + dbErrors + anyError)
+    ).handleError(jsonParsingError(User("1", "user1").toJson) + dbErrors + anyError)
 
   lazy val signUp: Route[AuthService, Response] = (
     Method.POST / "account" / "signup" -> handler: (request: Request) =>
