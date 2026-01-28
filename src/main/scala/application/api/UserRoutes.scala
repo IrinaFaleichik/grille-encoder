@@ -34,7 +34,7 @@ object UserRoutes {
               .map(count => Response.text(s"Created user: ${user.toJson}"))
           .logErrorWithoutTrace(_.getMessage)
       yield result
-    ).handleError(jsonParsingError(User("1", "user1").toJson) + dbErrors + anyError)
+    ).handleError(jsonParsingError + dbErrors + anyError)
 
   lazy val updateUser: Route[UserRepository, Response] = (
     Method.POST / "user" / "update" -> handler: (request: Request) =>
@@ -46,7 +46,7 @@ object UserRoutes {
               .map(count => Response.text(s"Updated user: ${user.toJson}"))
           .logErrorWithoutTrace(_.getMessage)
       yield result
-    ).handleError(jsonParsingError(User("1", "user1").toJson) + dbErrors + anyError)
+    ).handleError(jsonParsingError + dbErrors + anyError)
 
   lazy val deleteUser: Route[UserRepository, Response] = (
     Method.POST / "user" / "delete" -> handler: (request: Request) =>
@@ -58,6 +58,6 @@ object UserRoutes {
               .map(returnValue => Response.text(s"Deleted user: ${userId.toJson}"))
           .logErrorWithoutTrace(_.getMessage)
       yield result
-    ).handleError(jsonParsingError(new UserId("user1").toJson) + dbErrors + anyError)
+    ).handleError(jsonParsingError + dbErrors + anyError)
 
 }

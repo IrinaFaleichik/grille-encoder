@@ -30,7 +30,7 @@ object AdminRoutes {
           .logErrorWithoutTrace(_.getMessage)
         authUser <- ZIO.service[AuthUserDto]
       } yield Response.text(s"User ${authUser.username} made a privileged action: change user role")
-    }.mapError(dbErrors + jsonParsingError(new UserId("userId").toJson + Role.User.toJson) + anyError) @@ Auth.adminAuth
+    }.mapError(dbErrors + jsonParsingError + anyError) @@ Auth.adminAuth
 
   lazy val deleteUser: Route[AuthService, Response] = ???
 

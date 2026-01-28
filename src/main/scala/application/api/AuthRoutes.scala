@@ -20,7 +20,7 @@ object AuthRoutes:
         .map: user =>
           Response.text(s"Login succeed! Enjoy your stay, ${user.username}!")
         .logErrorWithoutTrace(_.getMessage)
-    ).handleError(jsonParsingError(User("1", "user1").toJson) + dbErrors + anyError)
+    ).handleError(jsonParsingError + dbErrors + anyError)
 
   lazy val signUp: Route[AuthService, Response] = (
     Method.POST / "account" / "signup" -> handler: (request: Request) =>

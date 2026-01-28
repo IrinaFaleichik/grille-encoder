@@ -18,9 +18,12 @@ object UserRoutesSuccessSpec extends ZIOSpecDefault {
     usersRouteTests + userCreateRouteTests + userUpdateRouteTests + userDeleteRouteTests
 
   /* Mocks for tests */
-  val invalidJsonErr: InvalidJson = new InvalidJson("(expected \'{\' got \'I\')")
-  val invalidJsonErrDeleteUser: InvalidJson = new InvalidJson("(expected \'\"\' got \'I\')")
-  val testUser1 = User("1", "user1")
+  val testUser1 = User("example-id", "example-name")
+  val expectedJson: String = testUser1.toJson
+  val expectedJsonId: String = testUser1.id.toJson
+
+  val invalidJsonErr: InvalidJson = new InvalidJson("(expected \'{\' got \'I\')")(expectedJson)
+  val invalidJsonErrDeleteUser: InvalidJson = new InvalidJson("(expected \'\"\' got \'I\')")(expectedJsonId)
   val usersMock = List(testUser1)
   val created = List(100L)
   val updated = List(10L)
