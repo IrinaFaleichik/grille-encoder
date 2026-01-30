@@ -40,7 +40,10 @@ object AuthService:
         case i: EmailIdentity => ZIO.fail(new Exception("Email authentication is not implemented yet"))
         case i: UsernameIdentity => usernameRepo.authenticate(i)
 
-    override def create(identity: Identity): ZIO[Any, Throwable, AuthUserDto] = ???
+    override def create(identity: Identity): ZIO[Any, Throwable, AuthUserDto] =
+      identity match
+        case i: EmailIdentity => ZIO.fail(new Exception("Email creation is not implemented yet"))
+        case i: UsernameIdentity => ZIO.fail(new Exception("Username creation is not implemented yet")) //usernameRepo.create(i)
 
     def changeRole(userId: UserId, role: Role): ZIO[Any, Throwable, AuthUserDto] = ???
 

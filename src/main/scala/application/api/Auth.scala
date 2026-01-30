@@ -14,6 +14,7 @@ object Auth:
 
   /** Creates a basic auth handler aspect that extracts credentials from HTTP headers
    * and processes them using the provided authentication function */
+  // todo redo to JWT? write token in a db (mb redis? for cache), and return it in the response
   private def basicAuthHandler(
                                 authenticate: Identity => ZIO[AuthService, Throwable, AuthUserDto]
                               ): HandlerAspect[AuthService, AuthUserDto] =

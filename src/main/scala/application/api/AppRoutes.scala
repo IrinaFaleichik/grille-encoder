@@ -12,21 +12,20 @@ import zio.http.*
 
 object AppRoutes {
 
-  //todo implement authentification, basic and through cookie
   val routes: Routes[UserRepositoryDefault & AuthService, Response] =
-    greetRoute ++ test ++ UserRoutes.routes ++ AdminRoutes.routes
+    Routes(greetRoute) @@ Middleware.debug ++ test ++ UserRoutes.routes
+      ++ AdminRoutes.routes ++ AuthRoutes.routes @@ Middleware.debug
 
   private lazy val test: Routes[AuthService, Response] = Routes(
     Method.GET / "test" -> handler:
       Response.text("Welcome to my service!") // todo add sandbox middleware
   )
 
-  lazy val greetRoute: Routes[AuthService, Response] = Routes(
+  lazy val greetRoute: Route[AuthService, Response] =
     Method.POST / "account" / "me" -> handler: (_: Request) =>
       ZIO.serviceWith[AuthUserDto](i =>
         Response.text(s"Welcome ${i.username}!"),
       )
-    @@ basicAuthWithUserContext,
-  ) @@ Middleware.debug
+    @@ basicAuthWithUserContext
 
 }
