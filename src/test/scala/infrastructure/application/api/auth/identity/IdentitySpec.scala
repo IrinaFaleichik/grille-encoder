@@ -1,13 +1,10 @@
 package irka.grilleEncoder
-package infrastructure.application.api.auth
+package infrastructure.application.api.auth.identity
 
-import zio.test.{Spec, ZIOSpecDefault}
 import application.api.auth.*
-
 import application.api.auth.identity.{EmailIdentity, Identity, UsernameIdentity}
-import zio.json.*
-import zio.test.*
 import zio.test.Assertion.*
+import zio.test.*
 
 object IdentitySpec extends ZIOSpecDefault:
   def spec: Spec[Any, Nothing] = suite("IdentitySpec")(
@@ -42,55 +39,45 @@ object IdentitySpec extends ZIOSpecDefault:
             assertTrue(result.toOption.get.isInstanceOf[EmailIdentity]) &&
             assert(result.toOption.get.asInstanceOf[EmailIdentity].email)(equalTo("user@example.com"))
         ,
-        test("fails with invalid email format") {
+        test("fails with invalid email format"):
           val result = identity.fromEmail("not-an-email@", "password123")
           assertTrue(result.isLeft) &&
             assert(result.left.toOption.get)(equalTo("Invalid email format"))
-        },
-
+        ,
         test("fails with short password"):
           val result = identity.fromEmail("user@example.com", "pass")
           assertTrue(result.isLeft) &&
             assert(result.left.toOption.get)(containsString("Password must be at least"))
       )
     ),
-
     // Validation rules tests
     suite("Validation rules")(
-      test("username minimum length edge") {
+      test("username minimum length edge"):
         val minValidLength = "a" * identity.MinUsernameLength
         val tooShort = "a" * (identity.MinUsernameLength - 1)
-
         assertTrue(identity.fromUsername(minValidLength, "password123").isRight) &&
           assertTrue(identity.fromUsername(tooShort, "password123").isLeft)
-      },
-
-      test("username allowed characters") {
+      ,
+      test("username allowed characters"):
         val validChars = List("user123", "user_name", "uSeR-nAmE", "user.name8")
         val invalidChars = List("user name", "user@name", "user#name", "user+name", "user‿name")
-
         assertTrue(
           validChars.forall(u => identity.fromUsername(u, "password123").isRight) &&
             invalidChars.forall(u => identity.fromUsername(u, "password123").isLeft)
         )
-      },
-
-      test("password minimum length") {
+      ,
+      test("password minimum length"):
         val minValidLength = "a" * identity.MinPasswordLength
         val tooShort = "a" * (identity.MinPasswordLength - 1)
-
         assertTrue(identity.fromUsername("validUser", minValidLength).isRight) &&
           assertTrue(identity.fromUsername("validUser", tooShort).isLeft)
-      },
-
-      test("email format validation") {
+      ,
+      test("email format validation"):
         val validEmails = List("user@example.com", "user.name@example.co.uk", "user+tag@example.com")
         val invalidEmails = List("not-an-email", "user@", "@example.com", "user@.com", "user@example.  ", "user@example...")
-
         assertTrue(
           validEmails.forall(e => identity.fromEmail(e, "password123").isRight) &&
             invalidEmails.forall(e => identity.fromEmail(e, "password123").isLeft)
         )
-      }
     )
   )
