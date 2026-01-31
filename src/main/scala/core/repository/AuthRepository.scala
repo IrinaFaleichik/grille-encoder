@@ -9,17 +9,15 @@ import zio.Config.Secret
 import zio.ZIO
 
 // Interface for auth operations
-trait AuthRepository[I <: Identity] {
+trait AuthRepository[I <: Identity]:
   def authenticate(identity: I): ZIO[Any, Throwable, AuthUserDto]
 
   def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]]
 
-  def create(identity: Identity): ZIO[Any, Throwable, AuthUserDto]
-
-}
+  def create(identity: I): ZIO[Any, Throwable, AuthUserDto]
 
 // Companion with accessors
-object AuthRepository {
+object AuthRepository:
   def authenticate(identity: Identity): ZIO[AuthRepository[Identity], Throwable, AuthUserDto] =
     ZIO.serviceWithZIO[AuthRepository[Identity]](_.authenticate(identity))
 
@@ -27,7 +25,6 @@ object AuthRepository {
     ZIO.serviceWithZIO[AuthRepository[_]](_.findById(id))
 
   def create(identity: Identity):
-  ZIO[AuthRepository[_], Throwable, AuthUserDto] =
-    ZIO.serviceWithZIO[AuthRepository[_]](_.create(identity))
+  ZIO[AuthRepository[Identity], Throwable, AuthUserDto] =
+    ZIO.serviceWithZIO[AuthRepository[Identity]](_.create(identity))
 
-}

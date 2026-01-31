@@ -24,18 +24,3 @@ object Role:
 
 // Response DTO with auth info
 case class AuthUserDto(id: UserId, username: String, email: Option[String], role: Role)
-
-//object AuthUserDto {
-//  implicit val encoder: JsonEncoder[AuthUserDto] = DeriveJsonEncoder.gen[AuthUserDto]
-//  implicit val decoder: JsonDecoder[AuthUserDto] = DeriveJsonDecoder.gen[AuthUserDto]
-//}
-
-//class AuthUserDto {
-//
-//  import zio.Config.Secret
-//
-//  case class AuthUser(id: UserId, username: String, password: Secret, email: Option[String] = None, role: Role = Role.User)
-//
-//  enum Role:
-//    case User, Admin
-//}

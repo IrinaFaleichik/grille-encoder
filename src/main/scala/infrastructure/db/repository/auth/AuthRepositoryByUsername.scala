@@ -13,7 +13,7 @@ import application.api.auth.identity.{Identity, UsernameIdentity}
 
 import java.sql.SQLException
 
-final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[UsernameIdentity] {
+final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[UsernameIdentity]:
 
   import ctx.*
 
@@ -40,14 +40,13 @@ final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[User
 
   override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
 
-  override def create(identity: Identity): ZIO[Any, Throwable, AuthUserDto] = ???
+  override def create(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] = ???
   // todo 1) go to db, 2) check if user exists
   //  3) if user exists, give an error or redirect to login
   //  4) ) if user doesn't exist, create user and return user
 
-}
 
-object AuthRepositoryByUsername {
+object AuthRepositoryByUsername:
   lazy val live: ZLayer[DBContext, Nothing, AuthRepositoryByUsername] =
     ZLayer.fromFunction(new AuthRepositoryByUsername(_))
-}
+
