@@ -1,5 +1,5 @@
 package irka.grilleEncoder
-package infrastructure.application.api.auth
+package application.api.auth
 
 import application.api.auth.identity.*
 import application.api.auth.{AuthService, AuthUserDto, Role}
@@ -59,7 +59,7 @@ object AuthServiceSpec extends ZIOSpecDefault:
       ???
 
     override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
-  
+
 
   // Mock implementation that fails authentication
   val failingUsernameRepo: AuthRepository[UsernameIdentity] = new AuthRepository[UsernameIdentity]:

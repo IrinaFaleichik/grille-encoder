@@ -29,7 +29,7 @@ package object api:
     parseRequestBody[EmailIdentity](request).orElse:
       parseRequestBody[UsernameIdentity](request)
 
-  private def dbErrors: PartialFunction[Throwable, Response] =
+  private[api] def dbErrors: PartialFunction[Throwable, Response] =
     case e: SQLException => Response.internalServerError(e.getMessage)
 
   private[api] def parseRequestBody[DecodedType: JsonDecoder : ClassTag]

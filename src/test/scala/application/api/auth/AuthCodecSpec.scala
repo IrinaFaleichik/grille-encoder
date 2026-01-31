@@ -1,5 +1,5 @@
 package irka.grilleEncoder
-package infrastructure.application.api.auth
+package application.api.auth
 
 import application.api.auth.{AuthUser, PasswordHash, Role}
 import domain.model.UserId

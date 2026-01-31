@@ -1,5 +1,5 @@
 package irka.grilleEncoder
-package infrastructure.application.api.auth.identity
+package application.api.auth.identity
 
 import application.api.auth.identity.*
 

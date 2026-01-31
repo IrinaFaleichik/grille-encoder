@@ -1,5 +1,5 @@
 package irka.grilleEncoder
-package infrastructure.application.api
+package application.api
 
 import application.api.UserRoutes
 import domain.errors.InvalidJson

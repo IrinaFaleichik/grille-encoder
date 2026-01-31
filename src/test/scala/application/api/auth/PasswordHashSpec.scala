@@ -1,9 +1,9 @@
 package irka.grilleEncoder
-package infrastructure.application.api.auth
+package application.api.auth
 
 import application.api.auth.PasswordHash
 import zio.test.*
-import infrastructure.application.api.auth.AuthCodecSpec.suite
+import AuthCodecSpec.suite
 
 object PasswordHashSpec extends ZIOSpecDefault:
   def spec: Spec[Any, Nothing] = suite("Password hashing")(
