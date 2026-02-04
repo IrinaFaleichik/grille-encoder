@@ -9,7 +9,7 @@ import application.api.auth.{AuthUserDto, Role}
 
 // DB entities (what maps to tables)
 package object entities:
-  object TableEntity {
+  object TableEntity:
     case class Cardboard(id: CardboardId, name: String, userId: String)
 
     case class Square(
@@ -29,10 +29,8 @@ package object entities:
                          passwordHash: String,
                          role: Int = Role.User.ordinal,
                          email: Option[String] = None
-                       ) {
+                       ):
       def toDto: AuthUserDto = AuthUserDto(id, username, email, Role.fromOrdinal(role))
-    }
-  }
 
   type DBContext = Quill.Sqlite[SnakeCase]
 
