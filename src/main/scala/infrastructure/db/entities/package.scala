@@ -32,6 +32,14 @@ package object entities:
                        ):
       def toDto: AuthUserDto = AuthUserDto(id, username, email, Role.fromOrdinal(role))
 
+    object AuthUser:
+      def generateId: UserId = java.util.UUID.randomUUID().toString
+
+      def randomUsername(email: String): String =
+        val prefix = email.split("@")(0)
+        val randomSuffix = java.util.UUID.randomUUID().toString.take(8)
+        s"$prefix-$randomSuffix"
+
   type DBContext = Quill.Sqlite[SnakeCase]
 
   object DBContext:

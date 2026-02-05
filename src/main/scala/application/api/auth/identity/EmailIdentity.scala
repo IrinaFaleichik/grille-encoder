@@ -1,6 +1,8 @@
 package irka.grilleEncoder
 package application.api.auth.identity
 
+import application.api.auth.{PasswordHash, Role}
+import infrastructure.db.entities.TableEntity.AuthUser
 import zio.json.{DeriveJsonDecoder, DeriveJsonEncoder, JsonDecoder, JsonEncoder}
 
 final case class EmailIdentity(email: String, password: String) extends Identity:
@@ -9,6 +11,15 @@ final case class EmailIdentity(email: String, password: String) extends Identity
       validEmail <- validateEmail(email)
       validPassword <- validatePassword(password)
     yield EmailIdentity(email = email, password = validPassword)
+
+  def createFromIdentity: AuthUser =
+    AuthUser(
+      id = AuthUser.generateId,
+      username = AuthUser.randomUsername(email),
+      passwordHash = password, //todo generate password hash
+      role = Role.User.ordinal,
+      email = Some(email),
+    )
 
 object EmailIdentity:
   implicit val encoder: JsonEncoder[EmailIdentity] = DeriveJsonEncoder.gen[EmailIdentity]
