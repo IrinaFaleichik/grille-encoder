@@ -3,10 +3,10 @@ package application.api
 
 import application.api.*
 import application.api.auth.identity.*
-import application.api.auth.Role
 import domain.errors.InvalidJson
 import domain.model.{User, UserId}
 
+import irka.grilleEncoder.application.api.auth.dto.Role
 import zio.*
 import zio.http.*
 import zio.http.Status.*

@@ -1,9 +1,8 @@
 package irka.grilleEncoder
 package application.api.auth
 
-import application.api.auth.{AuthUser, PasswordHash, Role}
 import domain.model.UserId
-
+import application.api.auth.dto.{AuthUserDto, Role}
 import zio.json.*
 import zio.test.*
 import zio.test.Assertion.*
@@ -12,7 +11,7 @@ object AuthCodecSpec extends ZIOSpecDefault {
   def spec: Spec[Any, Nothing] = suite("Auth Codecs")(
     suite("AuthUser Codec")(
       test("encodes AuthUser to JSON") {
-        val authUser = AuthUser("user1": UserId, "admin", PasswordHash.fromPlainText("password123"), Some("admin@example.com"), Role.Admin)
+        val authUser = AuthUserDto("user1": UserId, "admin", Some("admin@example.com"), Role.Admin)
         val json = authUser.toJson
         assertTrue(
           json.contains(""""id":"user1"""") &&
@@ -22,14 +21,14 @@ object AuthCodecSpec extends ZIOSpecDefault {
         )
       },
       test("decodes AuthUser from JSON") {
-        val json = """{"id":"user1","username":"admin","password":"password123","email":"admin@example.com","role":"Admin"}"""
-        val authUser = json.fromJson[AuthUser]
+        val json = """{"id":"user1","username":"admin","email":"admin@example.com","role":"Admin"}"""
+        val authUser = json.fromJson[AuthUserDto]
         assertTrue(authUser.isRight)
       },
       test("roundtrip AuthUser encoding/decoding") {
-        val authUser = AuthUser("user1": UserId, "admin", PasswordHash.fromPlainText("password123"), Some("admin@example.com"), Role.Admin)
+        val authUser = AuthUserDto("user1": UserId, "admin", Some("admin@example.com"), Role.Admin)
         val encoded = authUser.toJson
-        val decoded = encoded.fromJson[AuthUser]
+        val decoded = encoded.fromJson[AuthUserDto]
         assertTrue(decoded.isRight && decoded.toOption.get.username == authUser.username)
       }
     ),

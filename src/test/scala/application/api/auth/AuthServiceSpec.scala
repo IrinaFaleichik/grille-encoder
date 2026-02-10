@@ -2,10 +2,11 @@ package irka.grilleEncoder
 package application.api.auth
 
 import application.api.auth.identity.*
-import application.api.auth.{AuthService, AuthUserDto, Role}
+import application.api.auth.AuthService
 import domain.model.UserId
-
 import core.repository.AuthRepository
+import application.api.auth.dto.{AuthUserDto, Role}
+
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
