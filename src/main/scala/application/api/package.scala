@@ -4,9 +4,8 @@ package application
 import domain.errors.InvalidJson
 import application.api.auth.identity.{EmailIdentity, Identity, UsernameIdentity}
 import application.api.auth.identity.*
-
-import application.api.auth.Role
 import domain.model.{User, UserId}
+import application.api.auth.dto.Role
 import zio.ZIO
 import zio.http.{Request, Response, Status}
 import zio.json.{DecoderOps, EncoderOps, JsonDecoder}

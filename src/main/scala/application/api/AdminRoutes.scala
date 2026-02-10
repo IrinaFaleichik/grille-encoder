@@ -1,7 +1,7 @@
 package irka.grilleEncoder
 package application.api
 
-import application.api.auth.{AuthService, AuthUserDto, Role}
+import application.api.auth.AuthService
 
 import zio.http.Route
 import application.api.*
@@ -11,7 +11,7 @@ import domain.model.UserId
 import zio.*
 import zio.http.*
 import application.api.Auth.adminAuth
-
+import application.api.auth.dto.{AuthUserDto, Role}
 import zio.json.EncoderOps
 
 object AdminRoutes {

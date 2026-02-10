@@ -2,22 +2,38 @@ package irka.grilleEncoder
 package application.api.auth
 
 import application.api.auth.PasswordHash.fromPlainText
+
+import domain.model.UserId
 import zio.json.*
 
 import java.security.MessageDigest
 import java.util.Base64
 import scala.annotation.tailrec
 
-case class PasswordHash private(private val hash: String):
-  //  override def toString: String = "Password(***)"
+//todo add secret from environment
+//
+//trait WithPasswordHash[PasswordHash]
+//
+//given WithPasswordHash[PasswordHash] with
+//  extension (p: PasswordHash) def show: String =
+//    s"${p.hash} "
+
+case class PasswordHash private(private[auth] val hash: String):
+  override def toString: String = "Password(***)"
 
   def verify(plainPassword: String): Boolean =
     // For the simple SHA-256 implementation:
     val inputHash = fromPlainText(plainPassword)
     inputHash.hash == hash
 
-  def verifyHashed(hashedPassword: String): Boolean =
+  def verify(hashedPassword: PasswordHash): Boolean =
+    this.hash == hashedPassword.hash
+
+  private def verifyHashed(hashedPassword: String): Boolean =
     hashedPassword == this.hash
+
+  def verifyHashed(hashedPassword: PasswordHash): Boolean =
+    hashedPassword.verifyHashed(this.hash)
 
 object PasswordHash:
   private val salt = "my cool salt"

@@ -1,14 +1,14 @@
 package irka.grilleEncoder
 package infrastructure.db.repository.auth
 
-import application.api.auth.{AuthUserDto, PasswordHash}
+import application.api.auth.PasswordHash
 import core.repository.AuthRepository
 import domain.model.UserId
 import infrastructure.db.entities.{DBContext, TableEntity}
 
 import io.getquill.*
 import application.api.auth.identity.{EmailIdentity, Identity}
-
+import application.api.auth.dto.AuthUserDto
 import zio.{ZIO, ZLayer}
 
 
@@ -26,7 +26,7 @@ final class AuthRepositoryByEmail(ctx: DBContext) extends AuthRepository[EmailId
     for
       userOpt <- ctx.run(
         quote:
-          query[TableEntity.AuthUser].filter(
+          query[TableEntity.AuthUserEntity].filter(
             u => u.email.contains(lift(identity.email))
           )
       ).map(_.headOption)

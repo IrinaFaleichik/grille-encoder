@@ -2,7 +2,9 @@ package irka.grilleEncoder
 package application.api
 
 import application.api.*
-import application.api.auth.{AuthService, AuthUserDto}
+import application.api.auth.AuthService
+
+import application.api.auth.dto.AuthUserDto
 import zio.ZIO
 import zio.http.*
 

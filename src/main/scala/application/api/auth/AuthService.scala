@@ -3,8 +3,9 @@ package application.api.auth
 
 import core.repository.AuthRepository
 import application.api.auth.identity.{EmailIdentity, Identity, UsernameIdentity}
-
 import domain.model.UserId
+
+import application.api.auth.dto.{AuthUserDto, Role}
 import zio.{ZIO, ZLayer}
 
 // Strategy pattern for authenticating users

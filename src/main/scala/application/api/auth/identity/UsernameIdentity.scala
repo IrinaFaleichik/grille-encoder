@@ -1,8 +1,10 @@
 package irka.grilleEncoder
 package application.api.auth.identity
 
-import application.api.auth.Role
-import infrastructure.db.entities.TableEntity.AuthUser
+import application.api.auth.PasswordHash
+
+import application.api.auth.dto.Role
+import application.api.auth.model.AuthUser
 import zio.json.{DeriveJsonDecoder, DeriveJsonEncoder, JsonDecoder, JsonEncoder}
 
 final case class UsernameIdentity(username: String, password: String) extends Identity:
@@ -12,12 +14,12 @@ final case class UsernameIdentity(username: String, password: String) extends Id
       validPassword <- validatePassword(password)
     yield UsernameIdentity(username = validUsername, password = validPassword)
 
-  def createFromIdentity: AuthUser =
+  def toNewUser: AuthUser =
     AuthUser(
       id = AuthUser.generateId,
       username = username,
-      passwordHash = password, //todo generate password hash
-      role = Role.User.ordinal,
+      password = PasswordHash.fromPlainText(password), //todo generate password hash
+      role = Role.User,
       email = None,
     )
 

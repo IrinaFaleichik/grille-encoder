@@ -3,14 +3,14 @@ package application.api.auth.identity
 
 import application.api.*
 
-import infrastructure.db.entities.TableEntity.AuthUser
+import application.api.auth.model.AuthUser
 
 trait Identity(using Seal):
   val password: String
 
   def validate: Either[String, Identity]
 
-  def createFromIdentity: AuthUser
+  def toNewUser: AuthUser
 
 object Identity:
 

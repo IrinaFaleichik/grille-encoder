@@ -2,7 +2,7 @@ package irka.grilleEncoder
 package infrastructure.db.repository.auth
 
 import domain.model.UserId
-import application.api.auth.{AuthUserDto, PasswordHash}
+import application.api.auth.PasswordHash
 import infrastructure.db.entities.DBContext
 
 import zio.{ZIO, ZLayer}
@@ -10,6 +10,8 @@ import io.getquill.*
 import infrastructure.db.entities.TableEntity
 import core.repository.AuthRepository
 import application.api.auth.identity.{Identity, UsernameIdentity}
+import infrastructure.db.entities.TableEntity.AuthUserEntity
+import application.api.auth.dto.AuthUserDto
 
 import java.sql.SQLException
 
@@ -20,13 +22,13 @@ final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[User
   // Password hashing utils
   private def hashPassword(password: String): PasswordHash = PasswordHash.fromPlainText(password)
 
-  private def verifyPassword(dbPassword: String, hash: PasswordHash): Boolean = hash.verifyHashed(dbPassword)
+  private def verifyPassword(dbPassword: String, hash: PasswordHash): Boolean = hash.verify(dbPassword)
 
   override def authenticate(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] =
     for
       userOpt <- ctx.run(
         quote:
-          query[TableEntity.AuthUser].filterByKeys(Map("username" -> identity.username))
+          query[TableEntity.AuthUserEntity].filterByKeys(Map("username" -> identity.username))
       ).map(_.headOption)
       _ <- ZIO.logInfo(s"Successfully found record: ${identity.username}")
       user <- userOpt match
@@ -40,8 +42,21 @@ final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[User
 
   override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
 
-  override def create(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] = ???
-  // todo 1) go to db, 2) check if user exists
+  override def create(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] = {
+    def createBatch(batch: List[AuthUserEntity]): ZIO[Any, java.sql.SQLException, List[Long]] =
+      for
+        _ <- ZIO.logInfo(s"Creating users: $identity")
+        result <- ctx.run {
+          quote {
+              liftQuery(batch).foreach(v => query[AuthUserEntity].insertValue(v))
+            }
+        }
+      yield result
+    val authUser = identity.toNewUser.toTableEntity
+    createBatch(List(authUser)).map(_ => authUser.toDto)
+  }
+
+// todo 1) go to db, 2) check if user exists
   //  3) if user exists, give an error or redirect to login
   //  4) ) if user doesn't exist, create user and return user
 

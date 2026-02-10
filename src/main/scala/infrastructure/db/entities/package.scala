@@ -5,7 +5,8 @@ import domain.model.{CardboardId, SquareId, UserId}
 
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
-import application.api.auth.{AuthUserDto, Role}
+import application.api.auth.PasswordHash
+import application.api.auth.dto.{AuthUserDto, Role}
 
 // DB entities (what maps to tables)
 package object entities:
@@ -23,7 +24,7 @@ package object entities:
 
     case class User(id: UserId, name: String)
 
-    case class AuthUser(
+    case class AuthUserEntity(
                          id: UserId,
                          username: String,
                          passwordHash: String,
@@ -32,13 +33,6 @@ package object entities:
                        ):
       def toDto: AuthUserDto = AuthUserDto(id, username, email, Role.fromOrdinal(role))
 
-    object AuthUser:
-      def generateId: UserId = java.util.UUID.randomUUID().toString
-
-      def randomUsername(email: String): String =
-        val prefix = email.split("@")(0)
-        val randomSuffix = java.util.UUID.randomUUID().toString.take(8)
-        s"$prefix-$randomSuffix"
 
   type DBContext = Quill.Sqlite[SnakeCase]
 
