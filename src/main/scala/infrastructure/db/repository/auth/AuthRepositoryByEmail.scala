@@ -9,6 +9,8 @@ import infrastructure.db.entities.{DBContext, TableEntity}
 import io.getquill.*
 import application.api.auth.identity.{EmailIdentity, Identity}
 import application.api.auth.dto.AuthUserDto
+
+import irka.grilleEncoder.infrastructure.db.entities.TableEntity.AuthUserEntity
 import zio.{ZIO, ZLayer}
 
 
@@ -43,7 +45,19 @@ final class AuthRepositoryByEmail(ctx: DBContext) extends AuthRepository[EmailId
     ZIO.fail(new Exception("Email authentication is not implemented yet"))
 
   override def create(identity: EmailIdentity): ZIO[Any, Throwable, AuthUserDto] =
-    ZIO.fail(new Exception("Email authentication is not implemented yet"))
+    def createBatch(batch: List[AuthUserEntity]): ZIO[Any, java.sql.SQLException, List[Long]] =
+      for
+        _ <- ZIO.logInfo(s"Creating users: ${identity.email}")
+        result <- ctx.run:
+          quote:
+            liftQuery(batch).foreach(v => query[AuthUserEntity].insertValue(v))
+      yield result
+
+    val authUser = identity.toNewUser.toTableEntity
+    createBatch(List(authUser)).map(_ => authUser.toDto)
+
+//  override def create(identity: EmailIdentity): ZIO[Any, Throwable, AuthUserDto] =
+//    ZIO.fail(new Exception("Email authentication is not implemented yet"))
   // todo 1) go to db, 2) check if user exists
   //  3) if user exists, give an error or redirect to login
   //  4) ) if user doesn't exist, create user and return user

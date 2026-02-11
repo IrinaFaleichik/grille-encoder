@@ -42,19 +42,16 @@ final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[User
 
   override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
 
-  override def create(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] = {
+  override def create(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] =
     def createBatch(batch: List[AuthUserEntity]): ZIO[Any, java.sql.SQLException, List[Long]] =
       for
-        _ <- ZIO.logInfo(s"Creating users: $identity")
-        result <- ctx.run {
-          quote {
+        _ <- ZIO.logInfo(s"Creating users: ${identity.username}")
+        result <- ctx.run:
+          quote:
               liftQuery(batch).foreach(v => query[AuthUserEntity].insertValue(v))
-            }
-        }
       yield result
     val authUser = identity.toNewUser.toTableEntity
     createBatch(List(authUser)).map(_ => authUser.toDto)
-  }
 
 // todo 1) go to db, 2) check if user exists
   //  3) if user exists, give an error or redirect to login

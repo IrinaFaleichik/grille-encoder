@@ -2,8 +2,6 @@ package irka.grilleEncoder
 package application.api.auth
 
 import application.api.auth.PasswordHash.fromPlainText
-
-import domain.model.UserId
 import zio.json.*
 
 import java.security.MessageDigest
