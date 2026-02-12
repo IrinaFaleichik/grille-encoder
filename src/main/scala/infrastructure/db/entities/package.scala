@@ -5,7 +5,6 @@ import domain.model.{CardboardId, SquareId, UserId}
 
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
-import application.api.auth.PasswordHash
 import application.api.auth.dto.{AuthUserDto, Role}
 
 // DB entities (what maps to tables)

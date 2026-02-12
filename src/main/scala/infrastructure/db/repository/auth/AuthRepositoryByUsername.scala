@@ -2,7 +2,6 @@ package irka.grilleEncoder
 package infrastructure.db.repository.auth
 
 import domain.model.UserId
-import application.api.auth.PasswordHash
 import infrastructure.db.entities.DBContext
 
 import zio.{ZIO, ZLayer}
@@ -12,6 +11,9 @@ import core.repository.AuthRepository
 import application.api.auth.identity.{Identity, UsernameIdentity}
 import infrastructure.db.entities.TableEntity.AuthUserEntity
 import application.api.auth.dto.AuthUserDto
+import application.api.auth.password.{HashedPassword, HashingUtils}
+
+import application.api.auth.model.AuthUser
 
 import java.sql.SQLException
 
@@ -19,20 +21,17 @@ final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[User
 
   import ctx.*
 
-  // Password hashing utils
-  private def hashPassword(password: String): PasswordHash = PasswordHash.fromPlainText(password)
-
-  private def verifyPassword(dbPassword: String, hash: PasswordHash): Boolean = hash.verify(dbPassword)
-
-  override def authenticate(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] =
+  override def authenticate(identity: UsernameIdentity): ZIO[HashingUtils, Throwable, AuthUserDto] =
     for
+      _ <- ZIO.logInfo(s"authenticating: ${identity.username}")
+      userFromIdentity <- AuthUser.createFromIdentity(identity)
       userOpt <- ctx.run(
         quote:
           query[TableEntity.AuthUserEntity].filterByKeys(Map("username" -> identity.username))
       ).map(_.headOption)
       _ <- ZIO.logInfo(s"Successfully found record: ${identity.username}")
       user <- userOpt match
-        case Some(record) if verifyPassword(record.passwordHash, hashPassword("1234567890")) =>
+        case Some(record) if userFromIdentity.password.verifyHashed(record.passwordHash) =>
           ZIO.succeed(record.toDto)
         case _ =>
           ZIO.fail(new Exception("Invalid credentials, username or password is invalid"))
@@ -42,23 +41,18 @@ final class AuthRepositoryByUsername(ctx: DBContext) extends AuthRepository[User
 
   override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
 
-  override def create(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] =
-    def createBatch(batch: List[AuthUserEntity]): ZIO[Any, java.sql.SQLException, List[Long]] =
-      for
-        _ <- ZIO.logInfo(s"Creating users: ${identity.username}")
-        result <- ctx.run:
-          quote:
-              liftQuery(batch).foreach(v => query[AuthUserEntity].insertValue(v))
-      yield result
-    val authUser = identity.toNewUser.toTableEntity
-    createBatch(List(authUser)).map(_ => authUser.toDto)
-
-// todo 1) go to db, 2) check if user exists
-  //  3) if user exists, give an error or redirect to login
-  //  4) ) if user doesn't exist, create user and return user
+  override def create(identity: UsernameIdentity): ZIO[HashingUtils, Throwable, List[(Long, AuthUserDto)]] =
+    for
+      _ <- ZIO.logInfo(s"Creating users: ${identity.username}")
+      authUser <- AuthUser.createFromIdentity(identity)
+      tableEntity = List(authUser.toTableEntity)
+      result <- ctx.run:
+        quote:
+          liftQuery(tableEntity).foreach(v => query[AuthUserEntity].insertValue(v))
+    yield result.zip(tableEntity.map(_.toDto))
 
 
 object AuthRepositoryByUsername:
   lazy val live: ZLayer[DBContext, Nothing, AuthRepositoryByUsername] =
-    ZLayer.fromFunction(new AuthRepositoryByUsername(_))
+    ZLayer.fromFunction(AuthRepositoryByUsername.apply(_))
 

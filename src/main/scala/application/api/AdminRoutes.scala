@@ -12,12 +12,13 @@ import zio.*
 import zio.http.*
 import application.api.Auth.adminAuth
 import application.api.auth.dto.{AuthUserDto, Role}
-import zio.json.EncoderOps
+
+import application.api.auth.password.HashingUtils
 
 object AdminRoutes {
-  val routes: Routes[AuthService, Response] = Routes(changeUserRole) @@ Middleware.debug //, deleteUser) @@ Middleware.debug
+  val routes: Routes[AuthService & HashingUtils, Response] = Routes(changeUserRole) @@ Middleware.debug //, deleteUser) @@ Middleware.debug
 
-  private lazy val changeUserRole: Route[AuthService, Response] =
+  private lazy val changeUserRole: Route[AuthService & HashingUtils, Response] =
     Method.POST / "role" / "change" -> handler: (request: Request) =>
       for
         _ <- ZIO.logInfo("Entering route /role/change")

@@ -5,7 +5,8 @@ package application.api
 import application.api.auth.AuthService
 import application.api.auth.identity.Identity
 import application.api.auth.dto.AuthUserDto
-import zio.Config.Secret
+
+import application.api.auth.password.HashingUtils
 
 object Auth:
 
@@ -16,8 +17,8 @@ object Auth:
    * and processes them using the provided authentication function */
   // todo redo to JWT? write token in a db (mb redis? for cache), and return it in the response
   private def basicAuthHandler(
-                                authenticate: Identity => ZIO[AuthService, Throwable, AuthUserDto]
-                              ): HandlerAspect[AuthService, AuthUserDto] =
+                                authenticate: Identity => ZIO[AuthService & HashingUtils, Throwable, AuthUserDto]
+                              ): HandlerAspect[AuthService & HashingUtils, AuthUserDto] =
     HandlerAspect.interceptIncomingHandler(Handler.fromFunctionZIO[Request]: request =>
       request.header(Header.Authorization) match
         case Some(Header.Authorization.Basic(emailOrUsername, password)) =>
@@ -42,9 +43,9 @@ object Auth:
     )
 
   /** Basic authentication handler for normal user access */
-  val basicAuthWithUserContext: HandlerAspect[AuthService, AuthUserDto] =
+  val basicAuthWithUserContext: HandlerAspect[AuthService & HashingUtils, AuthUserDto] =
     basicAuthHandler(AuthService.authenticate)
 
   /** Basic authentication handler requiring admin privileges */
-  val adminAuth: HandlerAspect[AuthService, AuthUserDto] =
+  val adminAuth: HandlerAspect[AuthService & HashingUtils, AuthUserDto] =
     basicAuthHandler(AuthService.authenticateAdmin)

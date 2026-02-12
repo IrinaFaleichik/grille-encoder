@@ -11,9 +11,10 @@ import infrastructure.db
 import infrastructure.db.entities
 import infrastructure.db.repository.user.UserRepositoryDefault
 import infrastructure.logging.Logger
-
 import application.api.auth.AuthService
 import infrastructure.db.repository.auth.{AuthRepositoryByEmail, AuthRepositoryByUsername}
+
+import application.api.auth.password.{HashingUtils, Secret}
 
 import javax.sql.DataSource
 
@@ -29,8 +30,10 @@ object ExampleServer extends ZIOAppDefault {
       AuthRepositoryByUsername.live ++
         AuthRepositoryByEmail.live >>>
       AuthService.live
-  val appLayer: ZLayer[Any, Throwable, UserRepositoryDefault & AuthService] =
-    (con >>> ctx >>> UserRepositoryDefault.live) ++ appLayerAuth
+      
+  val appLayerSecret: ZLayer[Any, Throwable, HashingUtils] = ZLayer.fromZIO(Secret.live) >>> HashingUtils.live
+  val appLayer: ZLayer[Any, Throwable, UserRepositoryDefault & AuthService & HashingUtils] =
+    (con >>> ctx >>> UserRepositoryDefault.live) ++ appLayerAuth ++ appLayerSecret
 
   // Serving the routes using the default server layer on port 8080
   def run: ZIO[Any, Throwable, Unit] = for {

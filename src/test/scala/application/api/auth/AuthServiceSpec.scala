@@ -2,11 +2,11 @@ package irka.grilleEncoder
 package application.api.auth
 
 import application.api.auth.identity.*
-import application.api.auth.AuthService
 import domain.model.UserId
 import core.repository.AuthRepository
 import application.api.auth.dto.{AuthUserDto, Role}
 
+import application.api.auth.password.{HashingUtils, Secret}
 import zio.*
 import zio.test.*
 import zio.test.Assertion.*
@@ -46,7 +46,7 @@ object AuthServiceSpec extends ZIOSpecDefault:
 
     override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
 
-    override def create(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] = ???
+    override def create(identity: UsernameIdentity): ZIO[Any, Throwable, List[(Long, AuthUserDto)]] = ???
 
   // Mock implementation for admin authentication
   val adminUsernameRepo: AuthRepository[UsernameIdentity] = new AuthRepository[UsernameIdentity]:
@@ -56,7 +56,7 @@ object AuthServiceSpec extends ZIOSpecDefault:
       else
         ZIO.fail(new Exception("Authentication failed: invalid credentials"))
 
-    override def create(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] =
+    override def create(identity: UsernameIdentity): ZIO[Any, Throwable, List[(Long, AuthUserDto)]] =
       ???
 
     override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
@@ -64,26 +64,28 @@ object AuthServiceSpec extends ZIOSpecDefault:
 
   // Mock implementation that fails authentication
   val failingUsernameRepo: AuthRepository[UsernameIdentity] = new AuthRepository[UsernameIdentity]:
-    override def authenticate(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] =
+    override def authenticate(identity: UsernameIdentity): ZIO[HashingUtils, Throwable, AuthUserDto] =
       ZIO.fail(new Exception("Authentication failed: invalid credentials"))
 
     override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
 
-    override def create(identity: UsernameIdentity): ZIO[Any, Throwable, AuthUserDto] = ???
+    override def create(identity: UsernameIdentity): ZIO[HashingUtils, Throwable, List[(Long, AuthUserDto)]] = ???
 
   // Mock implementation of AuthRepository for EmailIdentity
   val emailRepo: AuthRepository[EmailIdentity] = new AuthRepository[EmailIdentity]:
-    def authenticate(identity: EmailIdentity): ZIO[Any, Throwable, AuthUserDto] =
+    def authenticate(identity: EmailIdentity): ZIO[HashingUtils, Throwable, AuthUserDto] =
       ZIO.fail(new Exception("Email authentication is not implemented yet"))
 
     override def findById(id: UserId): ZIO[Any, Throwable, Option[AuthUserDto]] = ???
 
-    override def create(identity: EmailIdentity): ZIO[Any, Throwable, AuthUserDto] = ???
+    override def create(identity: EmailIdentity): ZIO[HashingUtils, Throwable, List[(Long, AuthUserDto)]] = ???
 
+  val defaultSecret: Secret = Secret.make("secret", 12)
   // Test layers
-  private val regularUserLayer = ZLayer.succeed(successfulUsernameRepo) ++ ZLayer.succeed(emailRepo) >>> AuthService.live
-  private val adminUserLayer = ZLayer.succeed(adminUsernameRepo) ++ ZLayer.succeed(emailRepo) >>> AuthService.live
-  private val failingAuthLayer = ZLayer.succeed(failingUsernameRepo) ++ ZLayer.succeed(emailRepo) >>> AuthService.live
+  private val defaultHashing = ZLayer.succeed(defaultSecret) >>> HashingUtils.live
+  private val regularUserLayer = ZLayer.succeed(successfulUsernameRepo) ++ ZLayer.succeed(emailRepo) >>> AuthService.live ++ defaultHashing
+  private val adminUserLayer = ZLayer.succeed(adminUsernameRepo) ++ ZLayer.succeed(emailRepo) >>> AuthService.live ++ defaultHashing
+  private val failingAuthLayer = ZLayer.succeed(failingUsernameRepo) ++ ZLayer.succeed(emailRepo) >>> AuthService.live ++ defaultHashing
 
   def spec: Spec[Any, Throwable] = suite("AuthService")(
     suite("authenticate")(

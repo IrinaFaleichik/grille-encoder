@@ -4,23 +4,24 @@ package application.api.auth
 import core.repository.AuthRepository
 import application.api.auth.identity.{EmailIdentity, Identity, UsernameIdentity}
 import domain.model.UserId
-
 import application.api.auth.dto.{AuthUserDto, Role}
+
+import application.api.auth.password.HashingUtils
 import zio.{ZIO, ZLayer}
 
 // Strategy pattern for authenticating users
 trait AuthService:
-  def authenticate(identity: Identity): ZIO[Any, Throwable, AuthUserDto]
+  def authenticate(identity: Identity): ZIO[HashingUtils, Throwable, AuthUserDto]
 
   def create(identity: Identity): ZIO[Any, Throwable, AuthUserDto]
 
   def changeRole(userId: UserId, role: Role): ZIO[Any, Throwable, AuthUserDto]
 
 object AuthService:
-  def authenticate(identity: Identity): ZIO[AuthService, Throwable, AuthUserDto] =
+  def authenticate(identity: Identity): ZIO[AuthService & HashingUtils, Throwable, AuthUserDto] =
     ZIO.serviceWithZIO[AuthService](_.authenticate(identity))
 
-  def authenticateAdmin(identity: Identity): ZIO[AuthService, Throwable, AuthUserDto] =
+  def authenticateAdmin(identity: Identity): ZIO[AuthService & HashingUtils, Throwable, AuthUserDto] =
     authenticate(identity)
       .flatMap:
         case auth@AuthUserDto(_, _, _, role) if role == Role.Admin => ZIO.succeed(auth)
@@ -36,7 +37,7 @@ object AuthService:
                                            usernameRepo: AuthRepository[UsernameIdentity],
                                            emailRepo: AuthRepository[EmailIdentity]
                                          ) extends AuthService:
-    override def authenticate(identity: Identity): ZIO[Any, Throwable, AuthUserDto] =
+    override def authenticate(identity: Identity): ZIO[HashingUtils, Throwable, AuthUserDto] =
       identity match
         case i: EmailIdentity => ZIO.fail(new Exception("Email authentication is not implemented yet"))
         case i: UsernameIdentity => usernameRepo.authenticate(i)

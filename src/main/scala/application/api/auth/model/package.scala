@@ -2,16 +2,19 @@ package irka.grilleEncoder
 package application.api.auth
 
 import domain.model.UserId
-
 import application.api.auth.dto.Role
 import infrastructure.db.entities.TableEntity.AuthUserEntity
+
+import application.api.auth.identity.{EmailIdentity, Identity, UsernameIdentity}
+import application.api.auth.password.{HashedPassword, HashingUtils}
+import zio.ZIO
 
 package object model:
 
   case class AuthUser(
                        id: UserId,
                        username: String,
-                       password: PasswordHash,
+                       password: HashedPassword,
                        email: Option[String] = None,
                        role: Role = Role.User
                      ):
@@ -33,10 +36,24 @@ package object model:
       val randomSuffix = java.util.UUID.randomUUID().toString.take(8)
       s"$prefix-$randomSuffix"
 
-    def providePassword: String = ???
-
-//    // Factory methods for creating new users
-//    def fromIdentity():
-//    AuthUser =
-//  ...
+    def createFromIdentity(identity: Identity): ZIO[HashingUtils, Throwable, AuthUser] =
+      for {
+        hashedPassword <- HashingUtils.fromPlainText(identity.password)
+        user = identity match {
+          case email: EmailIdentity =>
+            AuthUser(
+              id = generateId,
+              username = randomUsername(email.email),
+              password = hashedPassword,
+              email = Some(email.email)
+            )
+          case username: UsernameIdentity =>
+            AuthUser(
+              id = generateId,
+              username = username.username,
+              password = hashedPassword,
+              email = None
+            )
+        }
+      } yield user
 
