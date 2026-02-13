@@ -1,11 +1,6 @@
 package irka.grilleEncoder
 package application.api.auth.password
 
-import zio.json.*
-import java.security.MessageDigest
-import java.util.Base64
-import scala.annotation.tailrec
-
 case class HashedPassword private(private[auth] val hash: String):
   override def toString: String = "Password(***)"
 

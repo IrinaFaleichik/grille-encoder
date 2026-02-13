@@ -3,10 +3,10 @@ package application.api.auth
 
 import domain.model.UserId
 import application.api.auth.dto.Role
-import infrastructure.db.entities.TableEntity.AuthUserEntity
-
 import application.api.auth.identity.{EmailIdentity, Identity, UsernameIdentity}
 import application.api.auth.password.{HashedPassword, HashingUtils}
+
+import infrastructure.db.entities.TableEntity
 import zio.ZIO
 
 package object model:
@@ -19,8 +19,8 @@ package object model:
                        role: Role = Role.User
                      ):
 
-    def toTableEntity: AuthUserEntity =
-      AuthUserEntity(
+    def toTableEntity: TableEntity.AuthUser =
+      TableEntity.AuthUser(
         id = this.id,
         username = this.username,
         passwordHash = this.password.hash, // Note: we need to expose this for db storage

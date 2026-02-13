@@ -23,7 +23,7 @@ package object entities:
 
     case class User(id: UserId, name: String)
 
-    case class AuthUserEntity(
+    case class AuthUser(
                          id: UserId,
                          username: String,
                          passwordHash: String,

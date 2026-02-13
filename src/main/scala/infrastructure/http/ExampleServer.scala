@@ -31,7 +31,7 @@ object ExampleServer extends ZIOAppDefault {
         AuthRepositoryByEmail.live >>>
       AuthService.live
       
-  val appLayerSecret: ZLayer[Any, Throwable, HashingUtils] = ZLayer.fromZIO(Secret.live) >>> HashingUtils.live
+  val appLayerSecret: ZLayer[Any, Throwable, HashingUtils] = Secret.live >>> HashingUtils.live
   val appLayer: ZLayer[Any, Throwable, UserRepositoryDefault & AuthService & HashingUtils] =
     (con >>> ctx >>> UserRepositoryDefault.live) ++ appLayerAuth ++ appLayerSecret
 

@@ -3,15 +3,18 @@ package infrastructure.db.repository.auth
 
 import core.repository.AuthRepository
 import domain.model.UserId
+
+import application.api.auth.model
 import infrastructure.db.entities.{DBContext, TableEntity}
+//import infrastructure.db.entities.{DBContext, TableEntity}
 
 import io.getquill.*
 import application.api.auth.identity.{EmailIdentity, Identity}
 import application.api.auth.dto.AuthUserDto
 import application.api.auth.password.{HashedPassword, HashingUtils}
-import infrastructure.db.entities.TableEntity.AuthUserEntity
+//import infrastructure.db.entities.TableEntity
 
-import application.api.auth.model.AuthUser
+//import application.api.auth.model
 import zio.{ZIO, ZLayer}
 
 
@@ -48,12 +51,12 @@ final class AuthRepositoryByEmail(ctx: DBContext) extends AuthRepository[EmailId
   override def create(identity: EmailIdentity): ZIO[HashingUtils, Throwable, List[(Long, AuthUserDto)]] =
     for
       _ <- ZIO.logInfo(s"Creating users: ${identity.email}")
-      authUser <- AuthUser.createFromIdentity(identity)
+      authUser <- model.AuthUser.createFromIdentity(identity)
       tableEntity = List(authUser.toTableEntity)
       _ <- ZIO.logInfo(s"Creating users: ${identity.email}")
       result <- ctx.run:
         quote:
-          liftQuery(tableEntity).foreach(v => query[AuthUserEntity].insertValue(v))
+          liftQuery(tableEntity).foreach(v => query[TableEntity.AuthUser].insertValue(v))
     yield result.zip(tableEntity.map(_.toDto))
 
 //  override def create(identity: EmailIdentity): ZIO[Any, Throwable, AuthUserDto] =
