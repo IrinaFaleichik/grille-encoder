@@ -27,21 +27,22 @@ final class AuthRepositoryByEmail(ctx: DBContext) extends AuthRepository[EmailId
 
   private def verifyPassword(dbPassword: String, hash: HashedPassword): Boolean = hash.verifyHashed(dbPassword)
 
-  override def authenticate(identity: EmailIdentity): ZIO[Any, Throwable, AuthUserDto] =
-    ZIO.fail(new Exception("Email authentication is not implemented yet"))
-//    for
-//      userOpt <- ctx.run(
-//        quote:
-//          query[TableEntity.AuthUserEntity].filter(
-//            u => u.email.contains(lift(identity.email))
-//          )
-//      ).map(_.headOption)
-//      user <- userOpt match
-//        case Some(record) if verifyPassword(record.passwordHash, hashPassword(identity.password)) =>
-//          ZIO.succeed(record.toDto)
-//        case _ =>
-//          ZIO.fail(new Exception("Invalid credentials"))
-//    yield user
+  override def authenticate(identity: EmailIdentity): ZIO[HashingUtils, Throwable, AuthUserDto] =
+    for
+      _ <- ZIO.logInfo(s"authenticating identity: ${identity.email}")
+      userFromIdentity <- model.AuthUser.createFromIdentity(identity) //todo add error type: sys env variables for Secret is not configured, error
+      userOpt <- ctx.run(
+        quote:
+          query[TableEntity.AuthUser].filterByKeys(Map("email" -> identity.email))
+      ).map(_.headOption)
+      _ <- ZIO.logInfo(s"Successfully found record: ${identity.email}")
+      userFromIdentity <- model.AuthUser.createFromIdentity(identity)
+      user <- userOpt match
+        case Some(record) if userFromIdentity.password.verifyHashed(record.passwordHash) =>
+          ZIO.succeed(record.toDto)
+        case _ =>
+          ZIO.fail(new Exception("Invalid credentials, username or password is invalid"))
+    yield user
 
   // Other implementations
 
@@ -61,9 +62,9 @@ final class AuthRepositoryByEmail(ctx: DBContext) extends AuthRepository[EmailId
 
 //  override def create(identity: EmailIdentity): ZIO[Any, Throwable, AuthUserDto] =
 //    ZIO.fail(new Exception("Email authentication is not implemented yet"))
-  // todo 1) go to db, 2) check if user exists
-  //  3) if user exists, give an error or redirect to login
-  //  4) ) if user doesn't exist, create user and return user
+// todo 1) go to db, 2) check if user exists
+//  3) if user exists, give an error or redirect to login
+//  4) ) if user doesn't exist, create user and return user
 
 
 object AuthRepositoryByEmail:
