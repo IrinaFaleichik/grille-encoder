@@ -37,9 +37,9 @@ package object model:
       s"$prefix-$randomSuffix"
 
     def createFromIdentity(identity: Identity): ZIO[HashingUtils, Throwable, AuthUser] =
-      for {
+      for
         hashedPassword <- HashingUtils.fromPlainText(identity.password)
-        user = identity match {
+        user = identity match
           case email: EmailIdentity =>
             AuthUser(
               id = generateId,
@@ -54,6 +54,5 @@ package object model:
               password = hashedPassword,
               email = None
             )
-        }
-      } yield user
+      yield user
 

@@ -1,6 +1,8 @@
 package irka.grilleEncoder
 package application.api.auth.password
 
+import domain.errors.SecretNotConfigured
+
 import zio.{ZIO, ZLayer}
 
 import scala.util.Try
@@ -16,16 +18,16 @@ object Secret:
   def make(salt: String, iterations: Int): Secret =
     SecretLive(salt, iterations)
 
-  // todo add a fatal error if secret is not created
   def live: ZLayer[Any, Throwable, Secret] = ZLayer.fromZIO:
-    for
+    (for
       _ <- ZIO.logInfo("Creating a secret")
-      env <- ZIO.fromTry(Try(System.getenv))
-      envSalt <- ZIO.fromTry(Try(env.get("PASSWORD_SALT")))
-      envIterations <- ZIO.fromTry(Try(env.get("PASSWORD_ITERATIONS")))
-      envIterationsInt <- ZIO.fromTry(Try(envIterations.toInt))
+      env <- ZIO.attempt(System.getenv)
+      envSalt <- ZIO.attempt(env.get("PASSWORD_SALT"))
+      envIterations <- ZIO.attempt(env.get("PASSWORD_ITERATIONS"))
+      envIterationsInt <- ZIO.attempt(envIterations.toInt)
       secret = make(envSalt, envIterationsInt)
       _ <- ZIO.logInfo("Secret is created")
-    yield secret
-
-//  def salt: ZIO[Secret, Throwable, String] = ZIO.serviceWith[Secret](secret => secret.salt)
+    yield secret).catchAll: _ =>
+      val shadingError = new SecretNotConfigured
+      ZIO.logError(shadingError.getMessage) *>
+        ZIO.fail(shadingError)

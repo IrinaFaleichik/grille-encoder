@@ -6,8 +6,12 @@ import infrastructure.db.entities.DBContext
 
 import zio.json.*
 
-package object errors {
+package object errors:
   class InvalidJson(err: String)(expectedJson: String) extends Exception(s"Invalid JSON: $err; try a JSON like ${expectedJson.toJson}")
 
   class DbError(err: String) extends Exception(s"For db type: $DBContext")
-}
+
+  class AuthError(err: String) extends Exception(s"Authentication error: $err")
+
+  class SecretNotConfigured extends AuthError("Secret is not configured")
+
